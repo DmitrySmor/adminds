@@ -16,7 +16,7 @@ service network restart                         # Перезапускаем с�
 service dnsmasq restart                         # Перезапускаем DNS
 
 # Дополнительно: sysctl (для ядра)
-sysctl -w net.ipv6.conf.all.disable_ipv6=1      # Все интерфейсы (временно)
-sysctl -w net.ipv6.conf.default.disable_ipv6=1  # Новые интерфейсы
-sysctl -w net.ipv6.conf.lo.disable_ipv6=1       # Loopback
-echo 'net.ipv6.conf.all.disable_ipv6=1' >> /etc/sysctl.conf  # Постоянно
+# sysctl -w net.ipv6.conf.all.disable_ipv6=1      # Все интерфейсы (временно)
+# sysctl -w net.ipv6.conf.default.disable_ipv6=1  # Новые интерфейсы
+# sysctl -w net.ipv6.conf.lo.disable_ipv6=1       # Loopback
+# echo 'net.ipv6.conf.all.disable_ipv6=1' >> /etc/sysctl.conf  # Постоянно
