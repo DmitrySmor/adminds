@@ -1,5 +1,11 @@
 # Скипты:
 
+### Отключаем IPV6:
+
+```sh
+curl -s https://raw.githubusercontent.com/DmitrySmor/adminds/refs/heads/main/OpenWrt/IPv6_disabled.sh | sh
+```
+
 ### list_installed_packages.sh
 
 Выводит список пакетов которые были установлые после установи с сисетмы.
