@@ -99,6 +99,8 @@ irm https://github.com/asheroto/winget-install/releases/latest/download/winget-i
 
 ## Отимизатор
 
+https://github.com/ChrisTitusTech/winutil
+
 ```
 irm "https://christitus.com/win"| iex
 ```
