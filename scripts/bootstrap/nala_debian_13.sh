@@ -7,7 +7,31 @@ if [ "$EUID" -ne 0 ]; then
   exit 1
 fi
 
-#!/bin/bash
+get_terminal_width() {
+    local width=80  # стандартное значение
+
+    # 1. Пытаемся получить через stty (работает в большинстве случаев)
+    if command -v stty &> /dev/null; then
+        width=$(stty size 2>/dev/null | cut -d' ' -f2)
+    fi
+
+    # 2. Если stty не дал результат, пробуем через переменную COLUMNS
+    if [[ -z "$width" || "$width" -eq 0 ]]; then
+        width=${COLUMNS:-0}
+    fi
+
+    # 3. Если всё ещё нет, пробуем через tput (на случай, если он есть, но не сработал из-за TERM)
+    if [[ "$width" -eq 0 ]] && command -v tput &> /dev/null; then
+        width=$(tput cols 2>/dev/null)
+    fi
+
+    # 4. Если всё равно 0 или меньше 10 – ставим 80
+    if [[ "$width" -lt 10 ]]; then
+        width=80
+    fi
+
+    echo "$width"
+}
 
 # Функция для печати заголовка в рамке из "="
 print_header() {
