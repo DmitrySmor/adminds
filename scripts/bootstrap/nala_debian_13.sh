@@ -24,8 +24,7 @@ export LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8
 timedatectl set-timezone Europe/Moscow
 
 # Установка базовых утилит
-nala install -y sudo tree unzip tar gzip vim git htop curl wget \
-  apt-transport-https ca-certificates
+nala install -y sudo tree unzip tar gzip vim git htop curl wget apt-transport-https ca-certificates
 
 # Очистка кэша nala
 nala clean
