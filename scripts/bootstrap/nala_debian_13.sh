@@ -7,40 +7,32 @@ if [ "$EUID" -ne 0 ]; then
   exit 1
 fi
 
+# Определение ширины терминала (безопасный способ)
 get_terminal_width() {
-    local width=80  # стандартное значение
-
-    # 1. Пытаемся получить через stty (работает в большинстве случаев)
-    if command -v stty &> /dev/null; then
+    local width=80
+    if command -v stty &>/dev/null; then
         width=$(stty size 2>/dev/null | cut -d' ' -f2)
     fi
-
-    # 2. Если stty не дал результат, пробуем через переменную COLUMNS
     if [[ -z "$width" || "$width" -eq 0 ]]; then
         width=${COLUMNS:-0}
     fi
-
-    # 3. Если всё ещё нет, пробуем через tput (на случай, если он есть, но не сработал из-за TERM)
-    if [[ "$width" -eq 0 ]] && command -v tput &> /dev/null; then
+    if [[ "$width" -eq 0 ]] && command -v tput &>/dev/null; then
         width=$(tput cols 2>/dev/null)
     fi
-
-    # 4. Если всё равно 0 или меньше 10 – ставим 80
     if [[ "$width" -lt 10 ]]; then
         width=80
     fi
-
     echo "$width"
 }
 
-# Функция для печати заголовка в рамке из "="
+# Печать заголовка с рамкой из "="
 print_header() {
     local text="$1"
     local cols=$(get_terminal_width)
     local text_len=${#text}
     local total_len=$cols
 
-    # Если текст слишком длинный, просто выводим его без рамки
+    # Если текст слишком длинный, просто выводим его
     if (( text_len + 2 > total_len )); then
         echo -e "\033[1;34m$text\033[0m"
         return
@@ -59,7 +51,7 @@ print_header() {
     printf -v right_line '%*s' "$right_padding" ''
     right_line=${right_line// /=}
 
-    # Вывод с цветом
+    # Вывод с жирным синим цветом
     echo -e "\033[1;34m${left_line} ${text} ${right_line}\033[0m"
 }
 
