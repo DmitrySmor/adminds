@@ -12,28 +12,33 @@ fi
 # Функция для печати заголовка в рамке из "="
 print_header() {
     local text="$1"
-    local cols=$(tput cols 2>/dev/null || echo 80)  # ширина терминала (или 80 по умолчанию)
+    local cols=$(tput cols 2>/dev/null || echo 80)   # ширина терминала
     local text_len=${#text}
-    local total_len=$((cols - 2))  # оставляем по одному пробелу по краям
-    local padding=$(( (total_len - text_len) / 2 ))
+    local total_len=$cols                            # без внешних отступов
 
-    # Если текст длиннее, чем доступное место – просто выводим его без рамки
-    if (( text_len > total_len )); then
+    # Вычисляем длину рамки с учётом двух пробелов (по одному с каждой стороны)
+    local padding=$(( (total_len - text_len - 2) / 2 ))
+    local remainder=$(( (total_len - text_len - 2) % 2 ))
+
+    # Если текст слишком длинный – выводим без рамки
+    if (( text_len + 2 > total_len )); then
         echo "$text"
         return
     fi
 
-    # Формируем строку из "="
-    local line
-    printf -v line '%*s' "$total_len" ''
-    line=${line// /=}  # заменяем все пробелы на "="
+    # Делим "=" поровну, остаток отдаём левой части
+    local left_padding=$((padding + remainder))
+    local right_padding=$padding
 
-    # Вставляем текст по центру
-    local left_part="${line:0:padding}"
-    local right_start=$((padding + text_len))
-    local right_part="${line:right_start}"
+    # Создаём строки из "=" нужной длины
+    local left_line right_line
+    printf -v left_line '%*s' "$left_padding" ''
+    left_line=${left_line// /=}
+    printf -v right_line '%*s' "$right_padding" ''
+    right_line=${right_line// /=}
 
-    echo " $left_part$text$right_part "
+    # Вывод: рамка + пробел + текст + пробел + рамка (жирный синий)
+    echo -e "\033[1;34m${left_line} ${text} ${right_line}\033[0m"
 }
 
 # Использование:
