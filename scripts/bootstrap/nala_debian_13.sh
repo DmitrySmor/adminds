@@ -7,6 +7,38 @@ if [ "$EUID" -ne 0 ]; then
   exit 1
 fi
 
+#!/bin/bash
+
+# Функция для печати заголовка в рамке из "="
+print_header() {
+    local text="$1"
+    local cols=$(tput cols 2>/dev/null || echo 80)  # ширина терминала (или 80 по умолчанию)
+    local text_len=${#text}
+    local total_len=$((cols - 2))  # оставляем по одному пробелу по краям
+    local padding=$(( (total_len - text_len) / 2 ))
+
+    # Если текст длиннее, чем доступное место – просто выводим его без рамки
+    if (( text_len > total_len )); then
+        echo "$text"
+        return
+    fi
+
+    # Формируем строку из "="
+    local line
+    printf -v line '%*s' "$total_len" ''
+    line=${line// /=}  # заменяем все пробелы на "="
+
+    # Вставляем текст по центру
+    local left_part="${line:0:padding}"
+    local right_start=$((padding + text_len))
+    local right_part="${line:right_start}"
+
+    echo " $left_part$text$right_part "
+}
+
+# Использование:
+print_header "Обновление системы и установка nala"
+
 echo "=== Обновление системы и установка nala ==="
 apt update
 apt install -y nala
