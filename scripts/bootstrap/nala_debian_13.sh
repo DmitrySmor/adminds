@@ -36,32 +36,30 @@ get_terminal_width() {
 # Функция для печати заголовка в рамке из "="
 print_header() {
     local text="$1"
-    local cols=$(tput cols 2>/dev/null || echo 80)   # ширина терминала
+    local cols=$(get_terminal_width)
     local text_len=${#text}
-    local total_len=$cols                            # без внешних отступов
+    local total_len=$cols
 
-    # Вычисляем длину рамки с учётом двух пробелов (по одному с каждой стороны)
-    local padding=$(( (total_len - text_len - 2) / 2 ))
-    local remainder=$(( (total_len - text_len - 2) % 2 ))
-
-    # Если текст слишком длинный – выводим без рамки
+    # Если текст слишком длинный, просто выводим его без рамки
     if (( text_len + 2 > total_len )); then
-        echo "$text"
+        echo -e "\033[1;34m$text\033[0m"
         return
     fi
 
-    # Делим "=" поровну, остаток отдаём левой части
+    # Вычисляем отступы: по одному пробелу вокруг текста
+    local padding=$(( (total_len - text_len - 2) / 2 ))
+    local remainder=$(( (total_len - text_len - 2) % 2 ))
     local left_padding=$((padding + remainder))
     local right_padding=$padding
 
-    # Создаём строки из "=" нужной длины
+    # Создаём строки из "="
     local left_line right_line
     printf -v left_line '%*s' "$left_padding" ''
     left_line=${left_line// /=}
     printf -v right_line '%*s' "$right_padding" ''
     right_line=${right_line// /=}
 
-    # Вывод: рамка + пробел + текст + пробел + рамка (жирный синий)
+    # Вывод с цветом
     echo -e "\033[1;34m${left_line} ${text} ${right_line}\033[0m"
 }
 
