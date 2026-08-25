@@ -1,0 +1,12 @@
+services:
+    hawser:
+        image: ghcr.io/finsys/hawser:latest
+        container_name: hawser
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock
+            - /opt/docker:/opt/hawser-stacks # ваши стеки будут храниться в /opt/docker на хосте
+        environment:
+            - STACKS_DIR=/opt/docker
+            - DOCKHAND_SERVER_URL=wss://dockhand.energo-effect.pro/api/hawser/connect
+            - TOKEN=#####################
+        restart: unless-stopped
