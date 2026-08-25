@@ -208,6 +208,7 @@ DOCKER_VER=$(docker --version 2>/dev/null | cut -d' ' -f3 | tr -d ',')
 COMPOSE_VER=$(docker compose version --short 2>/dev/null || echo "не установлен")
 CURRENT_LOCALE=$(locale | grep LANG= | cut -d= -f2)
 CURRENT_TIMEZONE=$(timedatectl show --property=Timezone --value)
+DOCKER_DIR=$( [ -d "/opt/docker" ] && echo "создана" || echo "ОТСУТСТВУЕТ" )
 
 # Создаём красивое резюме в рамке
 summary_width=$(get_terminal_width)
@@ -216,7 +217,9 @@ summary_text+="  Docker: $DOCKER_VER\n"
 summary_text+="  Compose: $COMPOSE_VER\n"
 summary_text+="  Локаль: $CURRENT_LOCALE\n"
 summary_text+="  Время: $CURRENT_TIMEZONE\n"
-summary_text+="  Пользователь в группе docker: $ORIGINAL_USER"
+summary_text+="  Пользователь в группе docker: $ORIGINAL_USER\n"
+summary_text+="  Директория /opt/docker: $DOCKER_DIR"
+
 
 # Выводим без дополнительной рамки, потому что print_header уже нарисовал верхнюю линию.
 # Можно вывести простой блок с информацией.
