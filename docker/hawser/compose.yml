@@ -1,12 +1,31 @@
+# ===================================================================
+# HAWSER – агент для удаленного управления Docker-стеками
+# Связь с сервером Dockhand по WebSocket (wss)
+# Официальный сайт:   https://dockhand.energo-effect.pro/ (или свой)
+# GitHub репозиторий: https://github.com/finsys/hawser
+# Автор образа:       Finsys (или укажите организацию)
+# Версия образа:      latest (на момент 2026-08-26)
+#
+# Что делает:
+#   - Монтирует /var/run/docker.sock для управления контейнерами хоста
+#   - Следит за стеками в /opt/docker и синхронизирует их с удаленным сервером
+#   - Подключается к серверу по защищенному WebSocket
+#
+# Важно:
+#   - Токен авторизации (TOKEN) должен быть получен в личном кабинете Dockhand
+#   - Путь /opt/docker на хосте должен существовать и быть доступным для записи
+#   - Внутренний путь STACKS_DIR (/opt/docker) должен совпадать с путем монтирования
+# ===================================================================
+
 services:
     hawser:
         image: ghcr.io/finsys/hawser:latest
         container_name: hawser
         volumes:
             - /var/run/docker.sock:/var/run/docker.sock
-            - /opt/docker:/opt/hawser-stacks # ваши стеки будут храниться в /opt/docker на хосте
+            - /opt/docker:/opt/docker # ваши стеки будут храниться в /opt/docker на хосте
         environment:
-            - STACKS_DIR=/opt/docker
+            - STACKS_DIR=/opt/docker # совпадает с внутренним путем монтирования
             - DOCKHAND_SERVER_URL=wss://dockhand.energo-effect.pro/api/hawser/connect
-            - TOKEN=#####################
+            - TOKEN=##_ВСАТЬ_СВОЙ_ТОКЕН_##
         restart: unless-stopped

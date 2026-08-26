@@ -1,0 +1,16 @@
+# ============================================================
+# IT Tools – набор полезных утилит для разработчика
+# Официальный сайт:   https://it-tools.tech/
+# GitHub репозиторий: https://github.com/CorentinTh/it-tools
+# Автор образа:       Corentin Thibaut
+# Версия образа:      latest (на момент 2026-08-26)
+# Используется порт:  28000 → 80 (внутри контейнера)
+# ============================================================
+
+services:
+    it-tools:
+        image: ghcr.io/corentinth/it-tools:latest
+        container_name: it-tools
+        restart: unless-stopped
+        ports:
+            - '28000:80'
