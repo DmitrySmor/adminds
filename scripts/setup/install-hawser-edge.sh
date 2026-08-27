@@ -9,8 +9,16 @@ if [[ $EUID -ne 0 ]]; then
     exit 1
 fi
 
-# --- Запрос параметров ---
-read -rp "Введите токен агента (из Dockhand): " HAWSER_TOKEN
+# --- Запрос параметров с проверками ---
+while true; do
+    read -rp "Введите токен агента (из Dockhand): " HAWSER_TOKEN
+    if [[ -n "$HAWSER_TOKEN" ]]; then
+        break
+    else
+        echo "❌ Токен не может быть пустым. Попробуйте снова."
+    fi
+done
+
 read -rp "Введите доменное имя сервера Dockhand [dockhand.energo-effect.pro]: " DOCKHAND_DOMAIN
 DOCKHAND_DOMAIN="${DOCKHAND_DOMAIN:-dockhand.energo-effect.pro}"
 
@@ -25,10 +33,14 @@ TMP_DIR="/tmp/hawser-install"
 mkdir -p "$TMP_DIR"
 cd "$TMP_DIR"
 
-# --- Скачивание последней версии бинарника ---
+# --- Скачивание последней версии бинарника с проверкой ---
 echo "→ Загрузка бинарного файла Hawser в $TMP_DIR ..."
-curl -fsSL -o hawser.tar.gz \
-    "https://github.com/Finsys/hawser/releases/latest/download/hawser_linux_amd64.tar.gz"
+if ! curl -fsSL -o hawser.tar.gz \
+    "https://github.com/Finsys/hawser/releases/latest/download/hawser_linux_amd64.tar.gz"; then
+    echo "❌ Ошибка загрузки: возможно, релиз не найден или имя файла неверное."
+    echo "   Проверьте https://github.com/Finsys/hawser/releases/latest"
+    exit 1
+fi
 
 echo "→ Распаковка..."
 tar -xzf hawser.tar.gz
