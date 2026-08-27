@@ -10,7 +10,6 @@ if [[ $EUID -ne 0 ]]; then
 fi
 
 # Запрос токена (обязательный параметр)
-exec < /dev/tty
 while true; do
     read -rp "Введите токен агента (из Dockhand): " HAWSER_TOKEN
     if [[ -n "$HAWSER_TOKEN" ]]; then
