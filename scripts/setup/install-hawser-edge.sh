@@ -9,25 +9,37 @@ if [[ $EUID -ne 0 ]]; then
     exit 1
 fi
 
-# --- Запрос параметров с проверками ---
-while true; do
-    read -rp "Введите токен агента (из Dockhand): " HAWSER_TOKEN
-    if [[ -n "$HAWSER_TOKEN" ]]; then
-        break
-    else
-        echo "❌ Токен не может быть пустым. Попробуйте снова."
-    fi
-done
+# --- Чтение параметров (из переменных окружения или интерактивно) ---
+if [[ -z "${HAWSER_TOKEN:-}" ]]; then
+    # Интерактивный запрос через /dev/tty
+    exec < /dev/tty
+    while true; do
+        read -rp "Введите токен агента (из Dockhand): " HAWSER_TOKEN
+        if [[ -n "$HAWSER_TOKEN" ]]; then
+            break
+        else
+            echo "❌ Токен не может быть пустым. Попробуйте снова."
+        fi
+    done
+else
+    echo "→ Используется токен из переменной окружения HAWSER_TOKEN"
+fi
 
-read -rp "Введите доменное имя сервера Dockhand [dockhand.energo-effect.pro]: " DOCKHAND_DOMAIN
-DOCKHAND_DOMAIN="${DOCKHAND_DOMAIN:-dockhand.energo-effect.pro}"
+if [[ -z "${DOCKHAND_DOMAIN:-}" ]]; then
+    exec < /dev/tty
+    read -rp "Введите доменное имя сервера Dockhand [dockhand.energo-effect.pro]: " DOCKHAND_DOMAIN
+    DOCKHAND_DOMAIN="${DOCKHAND_DOMAIN:-dockhand.energo-effect.pro}"
+else
+    echo "→ Используется домен из переменной окружения DOCKHAND_DOMAIN"
+fi
+
 DOCKHAND_SERVER_URL="wss://${DOCKHAND_DOMAIN}/api/hawser/connect"
 
 echo "→ Установка Hawser Edge с параметрами:"
 echo "  DOCKHAND_SERVER_URL = $DOCKHAND_SERVER_URL"
 echo "  TOKEN               = ********"
 
-# --- Определение ОС и архитектуры (как в официальном скрипте) ---
+# --- Определение ОС и архитектуры ---
 OS=$(uname -s | tr '[:upper:]' '[:lower:]')
 ARCH=$(uname -m)
 case "$ARCH" in
@@ -71,7 +83,7 @@ tar -xzf "$TMP_DIR/hawser.tar.gz" -C "$TMP_DIR"
 echo "→ Установка /usr/local/bin/hawser ..."
 install -m 755 "$TMP_DIR/hawser" /usr/local/bin/hawser
 
-# --- Подготовка каталога стеков (только создание) ---
+# --- Подготовка каталога стеков ---
 echo "→ Создание /opt/docker (если отсутствует)..."
 mkdir -p /opt/docker
 
@@ -106,7 +118,6 @@ Restart=always
 RestartSec=10
 EnvironmentFile=/etc/hawser/config
 
-# Без ограничений — работаем от root
 NoNewPrivileges=false
 ProtectSystem=strict
 ProtectHome=true
