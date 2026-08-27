@@ -9,29 +9,41 @@ if [[ $EUID -ne 0 ]]; then
     exit 1
 fi
 
-# Запрос токена (обязательный параметр)
-while true; do
-    read -rp "Введите токен агента (из Dockhand): " HAWSER_TOKEN
-    if [[ -n "$HAWSER_TOKEN" ]]; then
-        break
-    else
-        echo "❌ Токен не может быть пустым. Попробуйте снова."
-    fi
-done
+# --- Функция для безопасного чтения из терминала ---
+read_from_tty() {
+    local prompt="$1"
+    local var_name="$2"
+    local default_value="${3:-}"
+    local input
 
-if [[ -z "${DOCKHAND_DOMAIN:-}" ]]; then
-    exec < /dev/tty
-    read -rp "Введите доменное имя сервера Dockhand [dockhand.energo-effect.pro]: " DOCKHAND_DOMAIN
-    DOCKHAND_DOMAIN="${DOCKHAND_DOMAIN:-dockhand.energo-effect.pro}"
-else
-    echo "→ Используется домен из переменной окружения DOCKHAND_DOMAIN"
-fi
+    while true; do
+        # Перенаправляем только этот read на /dev/tty
+        read -rp "$prompt" input < /dev/tty
+        if [[ -n "$input" ]]; then
+            eval "$var_name=\"$input\""
+            return 0
+        elif [[ -n "$default_value" ]]; then
+            eval "$var_name=\"$default_value\""
+            return 0
+        else
+            echo "❌ Поле не может быть пустым. Попробуйте снова."
+        fi
+    done
+}
+
+# --- Чтение параметров (интерактивно через /dev/tty) ---
+
+# Запрос токена (обязательный параметр)
+read_from_tty "Введите токен агента (из Dockhand): " HAWSER_TOKEN
+
+# Запрос домена (с значением по умолчанию)
+read_from_tty "Введите доменное имя сервера Dockhand [dockhand.energo-effect.pro]: " DOCKHAND_DOMAIN "dockhand.energo-effect.pro"
 
 DOCKHAND_SERVER_URL="wss://${DOCKHAND_DOMAIN}/api/hawser/connect"
 
 echo "→ Установка Hawser Edge с параметрами:"
 echo "  DOCKHAND_SERVER_URL = $DOCKHAND_SERVER_URL"
-echo "  TOKEN               = ********"
+echo "  TOKEN               = $HAWSER_TOKEN"
 
 # --- Определение ОС и архитектуры ---
 OS=$(uname -s | tr '[:upper:]' '[:lower:]')
