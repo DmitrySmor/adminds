@@ -9,21 +9,21 @@ if [[ $EUID -ne 0 ]]; then
     exit 1
 fi
 
-# --- Чтение параметров (из переменных окружения или интерактивно) ---
-if [[ -z "${HAWSER_TOKEN:-}" ]]; then
-    # Интерактивный запрос через /dev/tty
-    exec < /dev/tty
-    while true; do
-        read -rp "Введите токен агента (из Dockhand): " HAWSER_TOKEN
-        if [[ -n "$HAWSER_TOKEN" ]]; then
-            break
-        else
-            echo "❌ Токен не может быть пустым. Попробуйте снова."
-        fi
-    done
-else
-    echo "→ Используется токен из переменной окружения HAWSER_TOKEN"
-fi
+# Запрос токена (обязательный параметр)
+exec < /dev/tty
+while true; do
+    read -rp "Введите токен агента (из Dockhand): " HAWSER_TOKEN
+    if [[ -n "$HAWSER_TOKEN" ]]; then
+        break
+    else
+        echo "❌ Токен не может быть пустым. Попробуйте снова."
+    fi
+done
+
+# Запрос домена (с значением по умолчанию)
+exec < /dev/tty
+read -rp "Введите доменное имя сервера Dockhand [dockhand.energo-effect.pro]: " DOCKHAND_DOMAIN
+DOCKHAND_DOMAIN="${DOCKHAND_DOMAIN:-dockhand.energo-effect.pro}"
 
 if [[ -z "${DOCKHAND_DOMAIN:-}" ]]; then
     exec < /dev/tty
