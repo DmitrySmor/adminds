@@ -20,11 +20,6 @@ while true; do
     fi
 done
 
-# Запрос домена (с значением по умолчанию)
-exec < /dev/tty
-read -rp "Введите доменное имя сервера Dockhand [dockhand.energo-effect.pro]: " DOCKHAND_DOMAIN
-DOCKHAND_DOMAIN="${DOCKHAND_DOMAIN:-dockhand.energo-effect.pro}"
-
 if [[ -z "${DOCKHAND_DOMAIN:-}" ]]; then
     exec < /dev/tty
     read -rp "Введите доменное имя сервера Dockhand [dockhand.energo-effect.pro]: " DOCKHAND_DOMAIN
