@@ -21,38 +21,57 @@ done
 
 read -rp "Введите доменное имя сервера Dockhand [dockhand.energo-effect.pro]: " DOCKHAND_DOMAIN
 DOCKHAND_DOMAIN="${DOCKHAND_DOMAIN:-dockhand.energo-effect.pro}"
-
 DOCKHAND_SERVER_URL="wss://${DOCKHAND_DOMAIN}/api/hawser/connect"
 
 echo "→ Установка Hawser Edge с параметрами:"
 echo "  DOCKHAND_SERVER_URL = $DOCKHAND_SERVER_URL"
 echo "  TOKEN               = ********"
 
-# --- Временная директория для загрузки ---
-TMP_DIR="/tmp/hawser-install"
-mkdir -p "$TMP_DIR"
-cd "$TMP_DIR"
+# --- Определение ОС и архитектуры (как в официальном скрипте) ---
+OS=$(uname -s | tr '[:upper:]' '[:lower:]')
+ARCH=$(uname -m)
+case "$ARCH" in
+    x86_64)   ARCH="amd64" ;;
+    aarch64|arm64) ARCH="arm64" ;;
+    armv7l|armv7|arm) ARCH="arm" ;;
+    *)
+        echo "❌ Неподдерживаемая архитектура: $ARCH"
+        exit 1
+        ;;
+esac
 
-# --- Скачивание последней версии бинарника с проверкой ---
-echo "→ Загрузка бинарного файла Hawser в $TMP_DIR ..."
-if ! curl -fsSL -o hawser.tar.gz \
-    "https://github.com/Finsys/hawser/releases/latest/download/hawser_linux_amd64.tar.gz"; then
-    echo "❌ Ошибка загрузки: возможно, релиз не найден или имя файла неверное."
-    echo "   Проверьте https://github.com/Finsys/hawser/releases/latest"
+# --- Получение последней версии через GitHub API ---
+echo "→ Определение последней версии Hawser..."
+LATEST_VERSION=$(curl -fsSL "https://api.github.com/repos/Finsys/hawser/releases/latest" | grep '"tag_name"' | sed -E 's/.*"tag_name": "v?([^"]+)".*/\1/')
+if [[ -z "$LATEST_VERSION" ]]; then
+    echo "❌ Не удалось получить последнюю версию с GitHub."
+    exit 1
+fi
+echo "  Последняя версия: $LATEST_VERSION"
+
+# --- Формирование URL скачивания ---
+DOWNLOAD_URL="https://github.com/Finsys/hawser/releases/download/v${LATEST_VERSION}/hawser_${LATEST_VERSION}_${OS}_${ARCH}.tar.gz"
+echo "→ Загрузка из: $DOWNLOAD_URL"
+
+# --- Временная директория ---
+TMP_DIR=$(mktemp -d)
+trap "rm -rf $TMP_DIR" EXIT
+
+# --- Скачивание и распаковка ---
+echo "→ Скачивание бинарного файла..."
+if ! curl -fsSL -o "$TMP_DIR/hawser.tar.gz" "$DOWNLOAD_URL"; then
+    echo "❌ Ошибка загрузки. Проверьте доступность релиза."
     exit 1
 fi
 
 echo "→ Распаковка..."
-tar -xzf hawser.tar.gz
+tar -xzf "$TMP_DIR/hawser.tar.gz" -C "$TMP_DIR"
 
-# --- Установка бинарника (перезапись, если существует) ---
+# --- Установка бинарника ---
 echo "→ Установка /usr/local/bin/hawser ..."
-install -m 755 hawser /usr/local/bin/hawser
+install -m 755 "$TMP_DIR/hawser" /usr/local/bin/hawser
 
-# Очистка временной директории
-cd / && rm -rf "$TMP_DIR"
-
-# --- Подготовка каталога стеков (только создание, без изменения прав) ---
+# --- Подготовка каталога стеков (только создание) ---
 echo "→ Создание /opt/docker (если отсутствует)..."
 mkdir -p /opt/docker
 
@@ -70,7 +89,7 @@ EOF
 
 chmod 600 /etc/hawser/config
 
-# --- Systemd-сервис (без создания пользователя, от root) ---
+# --- Systemd-сервис ---
 echo "→ Создание /etc/systemd/system/hawser.service ..."
 cat > /etc/systemd/system/hawser.service <<'EOF'
 [Unit]
