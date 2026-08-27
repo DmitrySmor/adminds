@@ -87,6 +87,9 @@ install -m 755 "$TMP_DIR/hawser" /usr/local/bin/hawser
 echo "→ Создание /opt/docker (если отсутствует)..."
 mkdir -p /opt/docker
 
+echo "→ Скрипт остановлен на этапе проверки версии"
+exit 1
+
 # --- Конфигурационный файл ---
 echo "→ Создание /etc/hawser/config ..."
 mkdir -p /etc/hawser
