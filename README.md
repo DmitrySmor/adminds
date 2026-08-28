@@ -17,3 +17,9 @@ curl -fsSL https://raw.githubusercontent.com/DmitrySmor/adminds/refs/heads/main/
 ```bash
 curl -fsSL https://raw.githubusercontent.com/DmitrySmor/adminds/refs/heads/main/scripts/setup/uninstall-hawser-edge.sh | sudo bash
 ```
+
+### Обновление конфигурации Hawser-агента
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/DmitrySmor/adminds/refs/heads/main/scripts/setup/update-hawser-config.sh | sudo bash
+```
