@@ -1,5 +1,12 @@
+# Editor / IDE
 *.swp
+*.swo
 *.tmp
 .DS_Store
 .idea/
+
+# Logs
 *.log
+
+# Build artifacts
+scripts/dist/
