@@ -83,7 +83,6 @@ log_error() {
 # Заголовок принимает один обязательный аргумент — текст.
 log_header() {
     local text="$1"
-
     printf '\n%b%s%b\n' \
         "$COLOR_BOLD_BLUE" \
         "$text" \
