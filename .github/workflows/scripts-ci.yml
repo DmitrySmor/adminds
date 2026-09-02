@@ -38,8 +38,6 @@ jobs:
               shell: bash
               run: |
                   shellcheck -x \
-                    # scripts/src/tasks/*.sh \
-                    # scripts/src/workflows/*.sh \
                     scripts/tests/*.sh
 
                   shellcheck -x \
