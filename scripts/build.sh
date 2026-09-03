@@ -77,6 +77,11 @@ append_script_content() {
     append_script_content "$WORKFLOW_FILE"
 } >"$OUTPUT_FILE"
 
+# Форматируем итоговый Bash-скрипт, если shfmt установлен.
+if command -v shfmt >/dev/null 2>&1; then
+    shfmt -w "$OUTPUT_FILE"
+fi
+
 # Делаем итоговый скрипт исполняемым.
 chmod +x "$OUTPUT_FILE"
 
