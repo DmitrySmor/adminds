@@ -2,10 +2,9 @@
 
 set -euo pipefail
 
-log_step "Обновление списка пакетов..."
-apt-get update
+update_system() {
+    log_step "Обновление списка пакетов..."
+    apt-get update
 
-log_step "Обновление установленных пакетов..."
-DEBIAN_FRONTEND=noninteractive apt-get upgrade -y
-
-log_success "Система обновлена"
+    log_success "Список пакетов обновлён"
+}

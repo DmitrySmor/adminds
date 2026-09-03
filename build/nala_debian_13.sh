@@ -137,3 +137,6 @@ if [[ "$VERSION_ID" != "13" ]]; then
 fi
 
 printf 'Операционная система: Debian %s\n' "$VERSION_ID"
+
+# Обновляем список пакетов.
+update_system
