@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 
+# ============================
 # Цвета терминала
+# ============================
 readonly COLOR_RESET='\033[0m'
 
 readonly COLOR_RED='\033[31m'

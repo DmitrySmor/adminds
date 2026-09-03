@@ -2,9 +2,9 @@
 
 set -euo pipefail
 
-# === colors.sh ===
-
+# ============================
 # Цвета терминала
+# ============================
 readonly COLOR_RESET='\033[0m'
 
 readonly COLOR_RED='\033[31m'
@@ -22,8 +22,6 @@ readonly COLOR_BOLD_YELLOW='\033[1;33m'
 readonly COLOR_BOLD_BLUE='\033[1;34m'
 readonly COLOR_BOLD_CYAN='\033[1;36m'
 readonly COLOR_BOLD_WHITE='\033[1;37m'
-
-# === log.sh ===
 
 # ============================
 #  Информационное сообщение
@@ -109,15 +107,12 @@ log_header() {
 		"$COLOR_RESET"
 }
 
-# === update_system.sh ===
-
 update_system() {
 	log_step "Обновление списка пакетов..."
 	apt-get update
 
 	log_success "Список пакетов обновлён"
 }
-
 # === workflow: nala_debian_13 ===
 
 # Проверяем операционную систему.

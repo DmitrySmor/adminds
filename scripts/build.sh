@@ -61,17 +61,9 @@ append_script_content() {
     printf '#!/usr/bin/env bash\n\n'
     printf 'set -euo pipefail\n\n'
 
-    printf '# === colors.sh ===\n\n'
     append_script_content "$COLORS_FILE"
-    printf '\n'
-
-    printf '# === log.sh ===\n\n'
     append_script_content "$LOG_FILE"
-    printf '\n'
-
-    printf '# === update_system.sh ===\n\n'
     append_script_content "$UPDATE_SYSTEM_FILE"
-    printf '\n'
 
     printf '# === workflow: %s ===\n\n' "$WORKFLOW_NAME"
     append_script_content "$WORKFLOW_FILE"
