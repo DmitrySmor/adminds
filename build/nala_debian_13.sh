@@ -111,6 +111,17 @@ log_header() {
         "$COLOR_RESET"
 }
 
+# === update_system.sh ===
+
+
+
+update_system() {
+    log_step "Обновление списка пакетов..."
+    apt-get update
+
+    log_success "Список пакетов обновлён"
+}
+
 # === workflow: nala_debian_13 ===
 
 

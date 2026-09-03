@@ -14,6 +14,7 @@ WORKFLOW_NAME="${1:-}"
 # Определяем исходные файлы.
 COLORS_FILE="$PROJECT_DIR/scripts/src/lib/colors.sh"
 LOG_FILE="$PROJECT_DIR/scripts/src/lib/log.sh"
+UPDATE_SYSTEM_FILE="$PROJECT_DIR/scripts/src/tasks/update_system.sh"
 WORKFLOW_FILE="$PROJECT_DIR/scripts/src/workflows/${WORKFLOW_NAME}.sh"
 
 # Определяем директорию и имя итогового файла.
@@ -28,7 +29,7 @@ if [[ -z "$WORKFLOW_NAME" ]]; then
 fi
 
 # Проверяем наличие всех необходимых исходных файлов.
-for file in "$COLORS_FILE" "$LOG_FILE" "$WORKFLOW_FILE"; do
+for file in "$COLORS_FILE" "$LOG_FILE" "$UPDATE_SYSTEM_FILE" "$WORKFLOW_FILE"; do
     if [[ ! -f "$file" ]]; then
         printf 'Ошибка: файл не найден: %s\n' "$file" >&2
         exit 1
@@ -66,6 +67,10 @@ append_script_content() {
 
     printf '# === log.sh ===\n\n'
     append_script_content "$LOG_FILE"
+    printf '\n'
+
+    printf '# === update_system.sh ===\n\n'
+    append_script_content "$UPDATE_SYSTEM_FILE"
     printf '\n'
 
     printf '# === workflow: %s ===\n\n' "$WORKFLOW_NAME"
