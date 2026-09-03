@@ -75,4 +75,6 @@ append_script_content() {
 # Делаем итоговый скрипт исполняемым.
 chmod +x "$OUTPUT_FILE"
 
-printf 'Сборка завершена: %s\n' "$OUTPUT_FILE"
+printf '\n'
+printf 'Запуск на сервере:\n'
+printf 'curl -fsSL https://raw.githubusercontent.com/DmitrySmor/adminds/main/build/%s.sh | sudo bash\n' "$WORKFLOW_NAME"
