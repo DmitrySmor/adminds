@@ -32,21 +32,21 @@ readonly COLOR_BOLD_WHITE='\033[1;37m'
 # затем значение переменной COLUMNS.
 # Если определить ширину не удалось, используется значение 80.
 get_terminal_width() {
-    local width
+	local width
 
-    if [[ -r /dev/tty ]] && command -v stty >/dev/null 2>&1; then
-        width="$(stty size </dev/tty 2>/dev/null | awk '{print $2}')"
-    fi
+	if [[ -r /dev/tty ]] && command -v stty >/dev/null 2>&1; then
+		width="$(stty size </dev/tty 2>/dev/null | awk '{print $2}')"
+	fi
 
-    if [[ -z "$width" || "$width" -lt 10 ]]; then
-        width="${COLUMNS:-0}"
-    fi
+	if [[ -z "$width" || "$width" -lt 10 ]]; then
+		width="${COLUMNS:-0}"
+	fi
 
-    if [[ -z "$width" || "$width" -lt 10 ]]; then
-        width=80
-    fi
+	if [[ -z "$width" || "$width" -lt 10 ]]; then
+		width=80
+	fi
 
-    printf '%s\n' "$width"
+	printf '%s\n' "$width"
 }
 
 # ============================
@@ -58,7 +58,7 @@ get_terminal_width() {
 #
 # Вывод направляется в stdout.
 log_info() {
-    printf '%b[INFO]%b %s\n' "$COLOR_BLUE" "$COLOR_RESET" "$*"
+	printf '%b[INFO]%b %s\n' "$COLOR_BLUE" "$COLOR_RESET" "$*"
 }
 
 # ============================
@@ -70,7 +70,7 @@ log_info() {
 #
 # Вывод направляется в stdout.
 log_step() {
-    printf '%b==>%b %s\n' "$COLOR_BOLD_CYAN" "$COLOR_RESET" "$*"
+	printf '%b==>%b %s\n' "$COLOR_BOLD_CYAN" "$COLOR_RESET" "$*"
 }
 
 # ============================
@@ -82,7 +82,7 @@ log_step() {
 #
 # Вывод направляется в stdout.
 log_success() {
-    printf '%b✓ %s%b\n' "$COLOR_BOLD_GREEN" "$*" "$COLOR_RESET"
+	printf '%b✓ %s%b\n' "$COLOR_BOLD_GREEN" "$*" "$COLOR_RESET"
 }
 
 # ============================
@@ -95,7 +95,7 @@ log_success() {
 #
 # Вывод направляется в stderr.
 log_warning() {
-    printf '%b[WARN]%b %s\n' "$COLOR_BOLD_YELLOW" "$COLOR_RESET" "$*" >&2
+	printf '%b[WARN]%b %s\n' "$COLOR_BOLD_YELLOW" "$COLOR_RESET" "$*" >&2
 }
 
 # ============================
@@ -107,7 +107,7 @@ log_warning() {
 #
 # Вывод направляется в stderr.
 log_error() {
-    printf '%b[ERROR]%b %s\n' "$COLOR_BOLD_RED" "$COLOR_RESET" "$*" >&2
+	printf '%b[ERROR]%b %s\n' "$COLOR_BOLD_RED" "$COLOR_RESET" "$*" >&2
 }
 
 # ============================
@@ -122,27 +122,27 @@ log_error() {
 #
 # Заголовок выводится в стандартном цвете терминала.
 log_header() {
-    local text="$1"
-    local width
-    local separator
+	local text="$1"
+	local width
+	local separator
 
-    width="$(get_terminal_width)"
+	width="$(get_terminal_width)"
 
-    printf -v separator '%*s' "$width" ''
-    separator="${separator// /=}"
+	printf -v separator '%*s' "$width" ''
+	separator="${separator// /=}"
 
-    printf '\n%s\n' "$separator"
-    printf '%s\n' "$text"
-    printf '%s\n' "$separator"
+	printf '\n%s\n' "$separator"
+	printf '%s\n' "$text"
+	printf '%s\n' "$separator"
 }
 
 check_root() {
-    if [[ "$EUID" -ne 0 ]]; then
-        log_error "Скрипт должен быть запущен от имени root"
-        exit 1
-    fi
+	if [[ "$EUID" -ne 0 ]]; then
+		log_error "Скрипт должен быть запущен от имени root"
+		exit 1
+	fi
 
-    log_success "Права root подтверждены"
+	log_success "Права root подтверждены"
 }
 
 # ============================
@@ -153,25 +153,25 @@ check_root() {
 #
 # При успешной проверке выводится подтверждение версии системы.
 check_os() {
-    if [[ ! -f /etc/os-release ]]; then
-        log_error "Файл /etc/os-release не найден"
-        exit 1
-    fi
+	if [[ ! -f /etc/os-release ]]; then
+		log_error "Файл /etc/os-release не найден"
+		exit 1
+	fi
 
-    # shellcheck disable=SC1091
-    source /etc/os-release
+	# shellcheck disable=SC1091
+	source /etc/os-release
 
-    if [[ "$ID" != "debian" ]]; then
-        log_error "Поддерживается только Debian"
-        exit 1
-    fi
+	if [[ "$ID" != "debian" ]]; then
+		log_error "Поддерживается только Debian"
+		exit 1
+	fi
 
-    if [[ "$VERSION_ID" != "13" ]]; then
-        log_error "Поддерживается только Debian 13, обнаружена версия $VERSION_ID"
-        exit 1
-    fi
+	if [[ "$VERSION_ID" != "13" ]]; then
+		log_error "Поддерживается только Debian 13, обнаружена версия $VERSION_ID"
+		exit 1
+	fi
 
-    log_success "Операционная система: Debian $VERSION_ID"
+	log_success "Операционная система: Debian $VERSION_ID"
 }
 
 # ============================
@@ -182,36 +182,37 @@ check_os() {
 #
 # После успешного выполнения выводится подтверждение обновления.
 update_system() {
-    apt-get update
-    log_success "Список пакетов обновлён"
+	apt-get update
+	log_success "Список пакетов обновлён"
 }
 
 nala_install_packages() {
-    if ! command -v nala >/dev/null 2>&1; then
-        apt-get install -y nala
-        if ! command -v nala >/dev/null 2>&1; then
-            log_error "Nala не установлен"
-            exit 1
-        fi
-        log_success "Nala установлен"
-    fi
-    nala install -y "$@"
-    log_success "Пакеты установлены"
+	if ! command -v nala >/dev/null 2>&1; then
+		apt-get install -y nala
+		if ! command -v nala >/dev/null 2>&1; then
+			log_error "Nala не установлен"
+			exit 1
+		fi
+		log_success "Nala установлен"
+	fi
+	nala install -y "$@"
+	log_success "Пакеты установлены"
 }
+# === workflow: nala_debian_13 ===
 
 BASE_PACKAGES=(
-    sudo
-    tree
-    unzip
-    tar
-    gzip
-    vim
-    git
-    htop
-    curl
-    wget
-    apt-transport-https
-    ca-certificates
+	sudo
+	tree
+	unzip
+	tar
+	gzip
+	vim
+	git
+	htop
+	curl
+	wget
+	apt-transport-https
+	ca-certificates
 )
 
 log_header "Проверка прав root"
