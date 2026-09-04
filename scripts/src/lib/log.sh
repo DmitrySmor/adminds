@@ -1,6 +1,32 @@
 #!/usr/bin/env bash
 
 # ============================
+#  Получение ширины терминала
+# ============================
+# Определяет текущую ширину терминала.
+#
+# Сначала используется размер терминала из /dev/tty,
+# затем значение переменной COLUMNS.
+# Если определить ширину не удалось, используется значение 80.
+get_terminal_width() {
+    local width
+
+    if [[ -r /dev/tty ]] && command -v stty >/dev/null 2>&1; then
+        width="$(stty size </dev/tty 2>/dev/null | awk '{print $2}')"
+    fi
+
+    if [[ -z "$width" || "$width" -lt 10 ]]; then
+        width="${COLUMNS:-0}"
+    fi
+
+    if [[ -z "$width" || "$width" -lt 10 ]]; then
+        width=80
+    fi
+
+    printf '%s\n' "$width"
+}
+
+# ============================
 #  Информационное сообщение
 # ============================
 # Используется для обычных информационных сообщений.
@@ -85,30 +111,4 @@ log_header() {
     printf '\n%s\n' "$separator"
     printf '%s\n' "$text"
     printf '%s\n' "$separator"
-}
-
-# ============================
-#  Получение ширины терминала
-# ============================
-# Определяет текущую ширину терминала.
-#
-# Сначала используется размер терминала из /dev/tty,
-# затем значение переменной COLUMNS.
-# Если определить ширину не удалось, используется значение 80.
-get_terminal_width() {
-    local width
-
-    if [[ -r /dev/tty ]] && command -v stty >/dev/null 2>&1; then
-        width="$(stty size </dev/tty 2>/dev/null | awk '{print $2}')"
-    fi
-
-    if [[ -z "$width" || "$width" -lt 10 ]]; then
-        width="${COLUMNS:-0}"
-    fi
-
-    if [[ -z "$width" || "$width" -lt 10 ]]; then
-        width=80
-    fi
-
-    printf '%s\n' "$width"
 }
