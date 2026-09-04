@@ -64,6 +64,7 @@ append_script_content() {
 
     append_script_content "$COLORS_FILE"
     append_script_content "$LOG_FILE"
+    append_script_content "$CHECK_OS_FILE"
     append_script_content "$UPDATE_SYSTEM_FILE"
 
     printf '# === workflow: %s ===\n\n' "$WORKFLOW_NAME"
