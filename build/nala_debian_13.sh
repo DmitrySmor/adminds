@@ -99,9 +99,38 @@ log_error() {
 #   Настройка SSH
 #
 # Заголовок принимает один обязательный аргумент — текст.
+get_terminal_width() {
+	local width
+
+	width="${COLUMNS:-}"
+
+	if [[ -z "$width" ]] && command -v tput >/dev/null 2>&1; then
+		width="$(tput cols 2>/dev/null || true)"
+	fi
+
+	if [[ -z "$width" || "$width" -lt 1 ]]; then
+		width=80
+	fi
+
+	printf '%s\n' "$width"
+}
+
 log_header() {
 	local text="$1"
+	local width
+	local separator
+
+	width="$(get_terminal_width)"
+
+	printf -v separator '%*s' "$width" ''
+	separator="${separator// /=}"
+
 	printf '\n%b%s%b\n' \
+		"$COLOR_BOLD_BLUE" \
+		"$separator" \
+		"$COLOR_RESET"
+
+	printf '%b%s%b\n' \
 		"$COLOR_BOLD_BLUE" \
 		"$text" \
 		"$COLOR_RESET"
@@ -141,9 +170,7 @@ check_os() {
 }
 
 update_system() {
-	log_step "Обновление списка пакетов..."
 	apt-get update
-
 	log_success "Список пакетов обновлён"
 }
 
@@ -160,7 +187,6 @@ nala_install_packages() {
 		log_success "Nala установлен"
 	fi
 
-	log_step "Установка пакетов через Nala..."
 	nala install -y "$@"
 
 	log_success "Пакеты установлены"
@@ -182,7 +208,14 @@ BASE_PACKAGES=(
 	ca-certificates
 )
 
+log_header "Проверка прав root"
 check_root
+
+log_header "Проверка операционной системы"
 check_os
+
+log_header "Обновление списка пакетов"
 update_system
+
+log_header "Установка пакетов через Nala"
 nala_install_packages "${BASE_PACKAGES[@]}"

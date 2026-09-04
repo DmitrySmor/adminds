@@ -15,7 +15,6 @@ nala_install_packages() {
         log_success "Nala установлен"
     fi
 
-    log_step "Установка пакетов через Nala..."
     nala install -y "$@"
 
     log_success "Пакеты установлены"

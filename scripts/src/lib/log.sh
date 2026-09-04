@@ -76,9 +76,38 @@ log_error() {
 #   Настройка SSH
 #
 # Заголовок принимает один обязательный аргумент — текст.
+get_terminal_width() {
+    local width
+
+    width="${COLUMNS:-}"
+
+    if [[ -z "$width" ]] && command -v tput >/dev/null 2>&1; then
+        width="$(tput cols 2>/dev/null || true)"
+    fi
+
+    if [[ -z "$width" || "$width" -lt 1 ]]; then
+        width=80
+    fi
+
+    printf '%s\n' "$width"
+}
+
 log_header() {
     local text="$1"
+    local width
+    local separator
+
+    width="$(get_terminal_width)"
+
+    printf -v separator '%*s' "$width" ''
+    separator="${separator// /=}"
+
     printf '\n%b%s%b\n' \
+        "$COLOR_BOLD_BLUE" \
+        "$separator" \
+        "$COLOR_RESET"
+
+    printf '%b%s%b\n' \
         "$COLOR_BOLD_BLUE" \
         "$text" \
         "$COLOR_RESET"
