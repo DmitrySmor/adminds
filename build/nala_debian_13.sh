@@ -102,8 +102,8 @@ log_error() {
 get_terminal_width() {
 	local width
 
-	if command -v tput >/dev/null 2>&1; then
-		width="$(tput cols 2>/dev/null || true)"
+	if [[ -r /dev/tty ]] && command -v stty >/dev/null 2>&1; then
+		width="$(stty size </dev/tty 2>/dev/null | awk '{print $2}')"
 	fi
 
 	if [[ -z "$width" || "$width" -lt 10 ]]; then
