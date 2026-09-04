@@ -161,14 +161,7 @@ install_nala() {
 }
 # === workflow: nala_debian_13 ===
 
-# проверка прав root
 check_root
-
-# Проверка операционной системы
 check_os
-
-# Обновляем список пакетов.
 update_system
-
-# Установка пакета Nala
 install_nala
