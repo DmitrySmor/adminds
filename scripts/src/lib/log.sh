@@ -92,27 +92,6 @@ log_error() {
 #     printf '%s\n' "$width"
 # }
 
-# log_header() {
-#     local text="$1"
-#     local width
-#     local separator
-
-#     width="$(get_terminal_width)"
-
-#     printf -v separator '%*s' "$width" ''
-#     separator="${separator// /=}"
-
-#     printf '\n%b%s%b\n' \
-#         "$COLOR_BOLD_BLUE" \
-#         "$separator" \
-#         "$COLOR_RESET"
-
-#     printf '%b%s%b\n' \
-#         "$COLOR_BOLD_BLUE" \
-#         "$text" \
-#         "$COLOR_RESET"
-# }
-
 get_terminal_width() {
     local width=80
     if command -v stty &>/dev/null; then
@@ -132,26 +111,26 @@ get_terminal_width() {
 
 log_header() {
     local text="$1"
-    local cols
-    cols=$(get_terminal_width)
-    local text_len=${#text}
-    local total_len=$cols
+    local width
+    local separator
 
-    if ((text_len + 2 > total_len)); then
-        echo -e "\033[1;34m$text\033[0m"
-        return
-    fi
+    width="$(get_terminal_width)"
 
-    local padding=$(((total_len - text_len - 2) / 2))
-    local remainder=$(((total_len - text_len - 2) % 2))
-    local left_padding=$((padding + remainder))
-    local right_padding=$padding
+    printf -v separator '%*s' "$width" ''
+    separator="${separator// /=}"
 
-    local left_line right_line
-    printf -v left_line '%*s' "$left_padding" ''
-    left_line=${left_line// /=}
-    printf -v right_line '%*s' "$right_padding" ''
-    right_line=${right_line// /=}
+    printf '\n%b%s%b\n' \
+        "$COLOR_BOLD_BLUE" \
+        "$separator" \
+        "$COLOR_RESET"
 
-    echo -e "\033[1;34m${left_line} ${text} ${right_line}\033[0m"
+    printf '%b%s%b\n' \
+        "$COLOR_BOLD_BLUE" \
+        "$text" \
+        "$COLOR_RESET"
+
+    printf '%b%s%b\n' \
+        "$COLOR_BOLD_BLUE" \
+        "$separator" \
+        "$COLOR_RESET"
 }
