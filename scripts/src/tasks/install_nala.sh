@@ -7,5 +7,10 @@ install_nala() {
 
     apt-get install -y nala
 
+    if ! command -v nala >/dev/null 2>&1; then
+        log_error "Nala не установлен"
+        exit 1
+    fi
+
     log_success "Nala установлен"
 }
