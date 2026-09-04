@@ -180,6 +180,7 @@ check_os() {
 		exit 1
 	fi
 
+	cat /etc/os-release
 	log_success "Операционная система: Debian $VERSION_ID"
 }
 
