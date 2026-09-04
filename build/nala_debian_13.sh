@@ -116,7 +116,7 @@ check_root() {
 	log_success "Права root подтверждены"
 }
 
-# Провека Операционный системы
+# Проверка операционной системы
 
 check_os() {
 	if [[ ! -f /etc/os-release ]]; then

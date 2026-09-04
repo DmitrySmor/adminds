@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-# Провека Операционный системы
+# Проверка операционной системы
 
 check_os() {
     if [[ ! -f /etc/os-release ]]; then
