@@ -132,7 +132,8 @@ get_terminal_width() {
 
 log_header() {
     local text="$1"
-    local cols=$(get_terminal_width)
+    local cols
+    cols=$(get_terminal_width)
     local text_len=${#text}
     local total_len=$cols
 
