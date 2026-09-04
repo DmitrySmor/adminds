@@ -76,22 +76,6 @@ log_error() {
 #   Настройка SSH
 #
 # Заголовок принимает один обязательный аргумент — текст.
-# get_terminal_width() {
-#     local width
-
-#     width="${COLUMNS:-}"
-
-#     if [[ -z "$width" ]] && command -v tput >/dev/null 2>&1; then
-#         width="$(tput cols 2>/dev/null || true)"
-#     fi
-
-#     if [[ -z "$width" || "$width" -lt 1 ]]; then
-#         width=80
-#     fi
-
-#     printf '%s\n' "$width"
-# }
-
 get_terminal_width() {
     local width=80
     if command -v stty &>/dev/null; then
