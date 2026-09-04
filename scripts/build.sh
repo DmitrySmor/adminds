@@ -16,6 +16,7 @@ COLORS_FILE="$PROJECT_DIR/scripts/src/lib/colors.sh"
 LOG_FILE="$PROJECT_DIR/scripts/src/lib/log.sh"
 CHECK_ROOT_FILE="$PROJECT_DIR/scripts/src/tasks/check_root.sh"
 CHECK_OS_FILE="$PROJECT_DIR/scripts/src/tasks/check_os.sh"
+CONFIGURE_LOCALE_FILE="$PROJECT_DIR/scripts/src/tasks/configure_locale.sh"
 UPDATE_SYSTEM_FILE="$PROJECT_DIR/scripts/src/tasks/update_system.sh"
 NALA_INSTALL_PACKAGES_FILE="$PROJECT_DIR/scripts/src/tasks/nala_install_packages.sh"
 ADD_DOCKER_REPOSITORY_FILE="$PROJECT_DIR/scripts/src/tasks/add_docker_repository.sh"
@@ -38,6 +39,7 @@ for file in \
     "$LOG_FILE" \
     "$CHECK_ROOT_FILE" \
     "$CHECK_OS_FILE" \
+    "$CONFIGURE_LOCALE_FILE" \
     "$UPDATE_SYSTEM_FILE" \
     "$NALA_INSTALL_PACKAGES_FILE" \
     "$ADD_DOCKER_REPOSITORY_FILE" \
@@ -77,6 +79,7 @@ append_script_content() {
     append_script_content "$LOG_FILE"
     append_script_content "$CHECK_ROOT_FILE"
     append_script_content "$CHECK_OS_FILE"
+    append_script_content "$CONFIGURE_LOCALE_FILE"
     append_script_content "$UPDATE_SYSTEM_FILE"
     append_script_content "$NALA_INSTALL_PACKAGES_FILE"
     append_script_content "$ADD_DOCKER_REPOSITORY_FILE"

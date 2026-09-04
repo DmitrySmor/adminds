@@ -184,6 +184,27 @@ check_os() {
 }
 
 # ============================
+#  Настройка локали
+# ============================
+# Устанавливает пакет locales и настраивает системную
+# локаль en_US.UTF-8.
+#
+# После настройки выводится установленное значение локали.
+configure_locale() {
+	apt-get install -y locales
+
+	printf '%s\n' 'en_US.UTF-8 UTF-8' >/etc/locale.gen
+
+	locale-gen
+	update-locale LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8
+
+	local lang_value
+	lang_value="$(grep '^LANG=' /etc/default/locale | cut -d= -f2)"
+
+	log_success "Локаль установлена: $lang_value"
+}
+
+# ============================
 #  Обновление списка пакетов
 # ============================
 # Обновляет локальный список доступных пакетов
@@ -275,6 +296,9 @@ check_root
 
 log_header "Проверка операционной системы"
 check_os
+
+log_header "Настройка локали"
+configure_locale
 
 log_header "Обновление списка пакетов"
 update_system

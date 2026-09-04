@@ -31,6 +31,9 @@ check_root
 log_header "Проверка операционной системы"
 check_os
 
+log_header "Настройка локали"
+configure_locale
+
 log_header "Обновление списка пакетов"
 update_system
 
