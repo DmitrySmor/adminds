@@ -127,20 +127,9 @@ log_header() {
 	printf -v separator '%*s' "$width" ''
 	separator="${separator// /=}"
 
-	printf '\n%b%s%b\n' \
-		"$COLOR_BOLD_BLUE" \
-		"$separator" \
-		"$COLOR_RESET"
-
-	printf '%b%s%b\n' \
-		"$COLOR_BOLD_BLUE" \
-		"$text" \
-		"$COLOR_RESET"
-
-	printf '%b%s%b\n' \
-		"$COLOR_BOLD_BLUE" \
-		"$separator" \
-		"$COLOR_RESET"
+	printf '\n%s\n' "$separator"
+	printf '%s\n' "$text"
+	printf '%s\n' "$separator"
 }
 
 check_root() {
