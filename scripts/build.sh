@@ -18,6 +18,7 @@ CHECK_ROOT_FILE="$PROJECT_DIR/scripts/src/tasks/check_root.sh"
 CHECK_OS_FILE="$PROJECT_DIR/scripts/src/tasks/check_os.sh"
 UPDATE_SYSTEM_FILE="$PROJECT_DIR/scripts/src/tasks/update_system.sh"
 NALA_INSTALL_PACKAGES_FILE="$PROJECT_DIR/scripts/src/tasks/nala_install_packages.sh"
+ADD_DOCKER_REPOSITORY_FILE="$PROJECT_DIR/scripts/src/tasks/add_docker_repository.sh"
 WORKFLOW_FILE="$PROJECT_DIR/scripts/src/workflows/${WORKFLOW_NAME}.sh"
 
 # Определяем директорию и имя итогового файла.
@@ -32,7 +33,15 @@ if [[ -z "$WORKFLOW_NAME" ]]; then
 fi
 
 # Проверяем наличие всех необходимых исходных файлов.
-for file in "$COLORS_FILE" "$LOG_FILE" "$CHECK_ROOT_FILE" "$CHECK_OS_FILE" "$UPDATE_SYSTEM_FILE" "$NALA_INSTALL_PACKAGES_FILE" "$WORKFLOW_FILE"; do
+for file in \
+    "$COLORS_FILE" \
+    "$LOG_FILE" \
+    "$CHECK_ROOT_FILE" \
+    "$CHECK_OS_FILE" \
+    "$UPDATE_SYSTEM_FILE" \
+    "$NALA_INSTALL_PACKAGES_FILE" \
+    "$ADD_DOCKER_REPOSITORY_FILE" \
+    "$WORKFLOW_FILE"; do
     if [[ ! -f "$file" ]]; then
         printf 'Ошибка: файл не найден: %s\n' "$file" >&2
         exit 1
@@ -70,6 +79,7 @@ append_script_content() {
     append_script_content "$CHECK_OS_FILE"
     append_script_content "$UPDATE_SYSTEM_FILE"
     append_script_content "$NALA_INSTALL_PACKAGES_FILE"
+    append_script_content "$ADD_DOCKER_REPOSITORY_FILE"
 
     printf '# === workflow: %s ===\n\n' "$WORKFLOW_NAME"
     append_script_content "$WORKFLOW_FILE"

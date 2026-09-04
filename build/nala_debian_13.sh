@@ -216,6 +216,35 @@ nala_install_packages() {
 	nala install -y "$@"
 	log_success "Пакеты установлены"
 }
+
+# ============================
+#  Добавление репозитория Docker
+# ============================
+# Добавляет официальный репозиторий Docker
+# для Debian и обновляет список пакетов.
+#
+# После выполнения пакеты Docker становятся доступны
+# для установки через APT или Nala.
+add_docker_repository() {
+	install -m 0755 -d /etc/apt/keyrings
+
+	curl -fsSL https://download.docker.com/linux/debian/gpg \
+		-o /etc/apt/keyrings/docker.asc
+
+	chmod a+r /etc/apt/keyrings/docker.asc
+
+	cat >/etc/apt/sources.list.d/docker.sources <<EOF
+Types: deb
+URIs: https://download.docker.com/linux/debian
+Suites: $(. /etc/os-release && echo "$VERSION_CODENAME")
+Components: stable
+Signed-By: /etc/apt/keyrings/docker.asc
+EOF
+
+	apt-get update
+
+	log_success "Репозиторий Docker добавлен"
+}
 # === workflow: nala_debian_13 ===
 
 BASE_PACKAGES=(
@@ -233,6 +262,14 @@ BASE_PACKAGES=(
 	ca-certificates
 )
 
+DOCKER_PACKAGES=(
+	docker-ce
+	docker-ce-cli
+	containerd.io
+	docker-buildx-plugin
+	docker-compose-plugin
+)
+
 log_header "Проверка прав root"
 check_root
 
@@ -244,3 +281,9 @@ update_system
 
 log_header "Установка пакетов через Nala"
 nala_install_packages "${BASE_PACKAGES[@]}"
+
+log_header "Добавление репозитория Docker"
+add_docker_repository
+
+log_header "Установка Docker через Nala"
+nala_install_packages "${DOCKER_PACKAGES[@]}"

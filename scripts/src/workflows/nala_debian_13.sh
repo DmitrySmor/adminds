@@ -17,6 +17,14 @@ BASE_PACKAGES=(
     ca-certificates
 )
 
+DOCKER_PACKAGES=(
+    docker-ce
+    docker-ce-cli
+    containerd.io
+    docker-buildx-plugin
+    docker-compose-plugin
+)
+
 log_header "Проверка прав root"
 check_root
 
@@ -28,3 +36,9 @@ update_system
 
 log_header "Установка пакетов через Nala"
 nala_install_packages "${BASE_PACKAGES[@]}"
+
+log_header "Добавление репозитория Docker"
+add_docker_repository
+
+log_header "Установка Docker через Nala"
+nala_install_packages "${DOCKER_PACKAGES[@]}"
