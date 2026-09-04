@@ -77,20 +77,19 @@ log_error() {
 #
 # Заголовок принимает один обязательный аргумент — текст.
 get_terminal_width() {
-    local width=80
-    if command -v stty &>/dev/null; then
-        width=$(stty size 2>/dev/null | cut -d' ' -f2)
+    local width
+
+    width="${COLUMNS:-}"
+
+    if [[ -z "$width" ]] && command -v tput >/dev/null 2>&1; then
+        width="$(tput cols 2>/dev/null || true)"
     fi
-    if [[ -z "$width" || "$width" -eq 0 ]]; then
-        width=${COLUMNS:-0}
-    fi
-    if [[ "$width" -eq 0 ]] && command -v tput &>/dev/null; then
-        width=$(tput cols 2>/dev/null)
-    fi
-    if [[ "$width" -lt 10 ]]; then
+
+    if [[ -z "$width" || "$width" -lt 10 ]]; then
         width=80
     fi
-    echo "$width"
+
+    printf '%s\n' "$width"
 }
 
 log_header() {
