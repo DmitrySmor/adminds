@@ -79,10 +79,12 @@ log_error() {
 get_terminal_width() {
     local width
 
-    width="${COLUMNS:-}"
-
-    if [[ -z "$width" ]] && command -v tput >/dev/null 2>&1; then
+    if command -v tput >/dev/null 2>&1; then
         width="$(tput cols 2>/dev/null || true)"
+    fi
+
+    if [[ -z "$width" || "$width" -lt 10 ]]; then
+        width="${COLUMNS:-0}"
     fi
 
     if [[ -z "$width" || "$width" -lt 10 ]]; then
