@@ -205,6 +205,21 @@ configure_locale() {
 }
 
 # ============================
+#  Настройка часового пояса
+# ============================
+# Устанавливает системный часовой пояс Europe/Moscow.
+#
+# После настройки выводится установленное значение часового пояса.
+configure_timezone() {
+	timedatectl set-timezone Europe/Moscow
+
+	local timezone
+	timezone="$(timedatectl show --property=Timezone --value)"
+
+	log_success "Часовой пояс установлен: $timezone"
+}
+
+# ============================
 #  Обновление списка пакетов
 # ============================
 # Обновляет локальный список доступных пакетов
@@ -299,6 +314,9 @@ check_os
 
 log_header "Настройка локали"
 configure_locale
+
+log_header "Настройка часового пояса"
+configure_timezone
 
 log_header "Обновление списка пакетов"
 update_system

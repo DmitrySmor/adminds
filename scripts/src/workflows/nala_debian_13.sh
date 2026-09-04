@@ -34,6 +34,9 @@ check_os
 log_header "Настройка локали"
 configure_locale
 
+log_header "Настройка часового пояса"
+configure_timezone
+
 log_header "Обновление списка пакетов"
 update_system
 
