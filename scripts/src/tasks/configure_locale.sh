@@ -20,5 +20,6 @@ configure_locale() {
     local lang_value
     lang_value="$(grep '^LANG=' /etc/default/locale | cut -d= -f2)"
 
+    locale
     log_success "Локаль установлена: $lang_value"
 }
