@@ -2,6 +2,9 @@
 
 set -euo pipefail
 
+# проверка прав root
+check_root
+
 # Проверка операционной системы
 check_os
 

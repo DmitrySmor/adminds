@@ -107,6 +107,15 @@ log_header() {
 		"$COLOR_RESET"
 }
 
+check_root() {
+	if [[ "$EUID" -ne 0 ]]; then
+		log_error "Скрипт должен быть запущен от имени root"
+		exit 1
+	fi
+
+	log_success "Права root подтверждены"
+}
+
 # Провека Операционный системы
 
 check_os() {
@@ -151,6 +160,9 @@ install_nala() {
 	log_success "Nala установлен"
 }
 # === workflow: nala_debian_13 ===
+
+# проверка прав root
+check_root
 
 # Проверка операционной системы
 check_os

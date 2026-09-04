@@ -14,6 +14,7 @@ WORKFLOW_NAME="${1:-}"
 # Определяем исходные файлы.
 COLORS_FILE="$PROJECT_DIR/scripts/src/lib/colors.sh"
 LOG_FILE="$PROJECT_DIR/scripts/src/lib/log.sh"
+CHECK_ROOT_FILE="$PROJECT_DIR/scripts/src/tasks/check_root.sh"
 CHECK_OS_FILE="$PROJECT_DIR/scripts/src/tasks/check_os.sh"
 UPDATE_SYSTEM_FILE="$PROJECT_DIR/scripts/src/tasks/update_system.sh"
 INSTALL_NALA_FILE="$PROJECT_DIR/scripts/src/tasks/install_nala.sh"
@@ -31,7 +32,7 @@ if [[ -z "$WORKFLOW_NAME" ]]; then
 fi
 
 # Проверяем наличие всех необходимых исходных файлов.
-for file in "$COLORS_FILE" "$LOG_FILE" "$CHECK_OS_FILE" "$UPDATE_SYSTEM_FILE" "$INSTALL_NALA_FILE" "$WORKFLOW_FILE"; do
+for file in "$COLORS_FILE" "$LOG_FILE" "$CHECK_ROOT_FILE" "$CHECK_OS_FILE" "$UPDATE_SYSTEM_FILE" "$INSTALL_NALA_FILE" "$WORKFLOW_FILE"; do
     if [[ ! -f "$file" ]]; then
         printf 'Ошибка: файл не найден: %s\n' "$file" >&2
         exit 1
@@ -65,6 +66,7 @@ append_script_content() {
 
     append_script_content "$COLORS_FILE"
     append_script_content "$LOG_FILE"
+    append_script_content "$CHECK_ROOT_FILE"
     append_script_content "$CHECK_OS_FILE"
     append_script_content "$UPDATE_SYSTEM_FILE"
     append_script_content "$INSTALL_NALA_FILE"
