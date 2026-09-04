@@ -202,7 +202,6 @@ configure_locale() {
 	local lang_value
 	lang_value="$(grep '^LANG=' /etc/default/locale | cut -d= -f2)"
 
-	timedatectl
 	log_success "Локаль установлена: $lang_value"
 }
 
@@ -218,6 +217,7 @@ configure_timezone() {
 	local timezone
 	timezone="$(timedatectl show --property=Timezone --value)"
 
+	timedatectl
 	log_success "Часовой пояс установлен: $timezone"
 }
 

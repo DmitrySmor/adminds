@@ -14,5 +14,6 @@ configure_timezone() {
     local timezone
     timezone="$(timedatectl show --property=Timezone --value)"
 
+    timedatectl
     log_success "Часовой пояс установлен: $timezone"
 }
