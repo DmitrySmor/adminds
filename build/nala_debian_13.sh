@@ -99,41 +99,83 @@ log_error() {
 #   Настройка SSH
 #
 # Заголовок принимает один обязательный аргумент — текст.
+# get_terminal_width() {
+#     local width
+
+#     width="${COLUMNS:-}"
+
+#     if [[ -z "$width" ]] && command -v tput >/dev/null 2>&1; then
+#         width="$(tput cols 2>/dev/null || true)"
+#     fi
+
+#     if [[ -z "$width" || "$width" -lt 1 ]]; then
+#         width=80
+#     fi
+
+#     printf '%s\n' "$width"
+# }
+
+# log_header() {
+#     local text="$1"
+#     local width
+#     local separator
+
+#     width="$(get_terminal_width)"
+
+#     printf -v separator '%*s' "$width" ''
+#     separator="${separator// /=}"
+
+#     printf '\n%b%s%b\n' \
+#         "$COLOR_BOLD_BLUE" \
+#         "$separator" \
+#         "$COLOR_RESET"
+
+#     printf '%b%s%b\n' \
+#         "$COLOR_BOLD_BLUE" \
+#         "$text" \
+#         "$COLOR_RESET"
+# }
+
 get_terminal_width() {
-	local width
-
-	width="${COLUMNS:-}"
-
-	if [[ -z "$width" ]] && command -v tput >/dev/null 2>&1; then
-		width="$(tput cols 2>/dev/null || true)"
+	local width=80
+	if command -v stty &>/dev/null; then
+		width=$(stty size 2>/dev/null | cut -d' ' -f2)
 	fi
-
-	if [[ -z "$width" || "$width" -lt 1 ]]; then
+	if [[ -z "$width" || "$width" -eq 0 ]]; then
+		width=${COLUMNS:-0}
+	fi
+	if [[ "$width" -eq 0 ]] && command -v tput &>/dev/null; then
+		width=$(tput cols 2>/dev/null)
+	fi
+	if [[ "$width" -lt 10 ]]; then
 		width=80
 	fi
-
-	printf '%s\n' "$width"
+	echo "$width"
 }
 
 log_header() {
 	local text="$1"
-	local width
-	local separator
+	local cols=$(get_terminal_width)
+	local text_len=${#text}
+	local total_len=$cols
 
-	width="$(get_terminal_width)"
+	if ((text_len + 2 > total_len)); then
+		echo -e "\033[1;34m$text\033[0m"
+		return
+	fi
 
-	printf -v separator '%*s' "$width" ''
-	separator="${separator// /=}"
+	local padding=$(((total_len - text_len - 2) / 2))
+	local remainder=$(((total_len - text_len - 2) % 2))
+	local left_padding=$((padding + remainder))
+	local right_padding=$padding
 
-	printf '\n%b%s%b\n' \
-		"$COLOR_BOLD_BLUE" \
-		"$separator" \
-		"$COLOR_RESET"
+	local left_line right_line
+	printf -v left_line '%*s' "$left_padding" ''
+	left_line=${left_line// /=}
+	printf -v right_line '%*s' "$right_padding" ''
+	right_line=${right_line// /=}
 
-	printf '%b%s%b\n' \
-		"$COLOR_BOLD_BLUE" \
-		"$text" \
-		"$COLOR_RESET"
+	echo -e "\033[1;34m${left_line} ${text} ${right_line}\033[0m"
 }
 
 check_root() {
@@ -176,19 +218,14 @@ update_system() {
 
 nala_install_packages() {
 	if ! command -v nala >/dev/null 2>&1; then
-		log_step "Установка Nala..."
 		apt-get install -y nala
-
 		if ! command -v nala >/dev/null 2>&1; then
 			log_error "Nala не установлен"
 			exit 1
 		fi
-
 		log_success "Nala установлен"
 	fi
-
 	nala install -y "$@"
-
 	log_success "Пакеты установлены"
 }
 # === workflow: nala_debian_13 ===
