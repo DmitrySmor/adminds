@@ -7,3 +7,6 @@ check_os
 
 # Обновляем список пакетов.
 update_system
+
+# Установка пакета Nala
+install_nala

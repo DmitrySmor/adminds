@@ -137,6 +137,14 @@ update_system() {
 
 	log_success "Список пакетов обновлён"
 }
+
+install_nala() {
+	log_step "Установка Nala..."
+
+	apt-get install -y nala
+
+	log_success "Nala установлен"
+}
 # === workflow: nala_debian_13 ===
 
 # Проверка операционной системы
@@ -144,3 +152,6 @@ check_os
 
 # Обновляем список пакетов.
 update_system
+
+# Установка пакета Nala
+install_nala
