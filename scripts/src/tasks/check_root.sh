@@ -17,5 +17,6 @@ check_root() {
         exit 1
     fi
 
+    id
     log_success "Права root подтверждены"
 }
