@@ -283,7 +283,10 @@ EOF
 
 	apt-get update
 
+	mkdir -p /opt/docker/
+
 	log_success "Репозиторий Docker добавлен"
+	log_success "Директория Docker /opt/docker/ создана"
 }
 # === workflow: nala_debian_13 ===
 
