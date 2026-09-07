@@ -20,9 +20,9 @@ CONFIGURE_LOCALE_FILE="$PROJECT_DIR/scripts/src/tasks/configure_locale.sh"
 CONFIGURE_TIMEZONE_FILE="$PROJECT_DIR/scripts/src/tasks/configure_timezone.sh"
 UPDATE_SYSTEM_FILE="$PROJECT_DIR/scripts/src/tasks/update_system.sh"
 NALA_INSTALL_PACKAGES_FILE="$PROJECT_DIR/scripts/src/tasks/nala_install_packages.sh"
-ADD_DOCKER_REPOSITORY_FILE="$PROJECT_DIR/scripts/src/tasks/add_docker_repository.sh"
+DOCKER_ADD_REPOSITORY_FILE="$PROJECT_DIR/scripts/src/tasks/docker_add_repository.sh"
 NALA_CLEAN_CACHE_FILE="$PROJECT_DIR/scripts/src/tasks/nala_clean_cache.sh"
-START_DOCKER_FILE="$PROJECT_DIR/scripts/src/tasks/start_docker.sh"
+DOCKER_START_FILE="$PROJECT_DIR/scripts/src/tasks/docker_start.sh"
 ADD_USER_TO_GROUP_FILE="$PROJECT_DIR/scripts/src/tasks/add_user_to_group.sh"
 WORKFLOW_FILE="$PROJECT_DIR/scripts/src/workflows/${WORKFLOW_NAME}.sh"
 
@@ -47,9 +47,9 @@ for file in \
     "$CONFIGURE_TIMEZONE_FILE" \
     "$UPDATE_SYSTEM_FILE" \
     "$NALA_INSTALL_PACKAGES_FILE" \
-    "$ADD_DOCKER_REPOSITORY_FILE" \
+    "$DOCKER_ADD_REPOSITORY_FILE" \
     "$NALA_CLEAN_CACHE_FILE" \
-    "$START_DOCKER_FILE" \
+    "$DOCKER_START_FILE" \
     "$ADD_USER_TO_GROUP_FILE" \
     "$WORKFLOW_FILE"; do
     if [[ ! -f "$file" ]]; then
@@ -91,9 +91,9 @@ append_script_content() {
     append_script_content "$CONFIGURE_TIMEZONE_FILE"
     append_script_content "$UPDATE_SYSTEM_FILE"
     append_script_content "$NALA_INSTALL_PACKAGES_FILE"
-    append_script_content "$ADD_DOCKER_REPOSITORY_FILE"
+    append_script_content "$DOCKER_ADD_REPOSITORY_FILE"
     append_script_content "$NALA_CLEAN_CACHE_FILE"
-    append_script_content "$START_DOCKER_FILE"
+    append_script_content "$DOCKER_START_FILE"
     append_script_content "$ADD_USER_TO_GROUP_FILE"
 
     append_script_content "$WORKFLOW_FILE"
