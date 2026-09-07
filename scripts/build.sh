@@ -91,7 +91,8 @@ append_script_content() {
     append_script_content "$NALA_INSTALL_PACKAGES_FILE"
     append_script_content "$ADD_DOCKER_REPOSITORY_FILE"
     append_script_content "$NALA_CLEAN_CACHE_FILE"
-    append_script_content "$NALA_CLEAN_CACHE_FILE"
+    append_script_content "$START_DOCKER_FILE"
+
     append_script_content "$WORKFLOW_FILE"
 } >"$OUTPUT_FILE"
 

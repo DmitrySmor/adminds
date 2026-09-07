@@ -301,14 +301,17 @@ nala_clean_cache() {
 }
 
 # ============================
-#  Очистка кэша Nala
+#  Запуск Docker
 # ============================
-# Очищает локальный кэш загруженных пакетов Nala.
+# Включает Docker при загрузке системы
+# и запускает сервис Docker.
 #
-# После очистки выводится подтверждение.
-nala_clean_cache() {
-	nala clean
-	log_success "Кэш Nala очищен"
+# После запуска выводится состояние сервиса.
+start_docker() {
+	systemctl enable --now docker
+	systemctl status docker --no-pager | head -5
+
+	log_success "Docker запущен"
 }
 
 BASE_PACKAGES=(
