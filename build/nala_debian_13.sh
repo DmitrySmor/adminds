@@ -300,6 +300,17 @@ nala_clean_cache() {
 	log_success "Кэш Nala очищен"
 }
 
+# ============================
+#  Очистка кэша Nala
+# ============================
+# Очищает локальный кэш загруженных пакетов Nala.
+#
+# После очистки выводится подтверждение.
+nala_clean_cache() {
+	nala clean
+	log_success "Кэш Nala очищен"
+}
+
 BASE_PACKAGES=(
 	sudo
 	tree
@@ -349,3 +360,6 @@ nala_install_packages "${DOCKER_PACKAGES[@]}"
 
 log_header "Очистка кэша Nala"
 nala_clean_cache
+
+log_header "Запуск Docker"
+start_docker

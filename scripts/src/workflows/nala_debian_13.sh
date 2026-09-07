@@ -51,3 +51,6 @@ nala_install_packages "${DOCKER_PACKAGES[@]}"
 
 log_header "Очистка кэша Nala"
 nala_clean_cache
+
+log_header "Запуск Docker"
+start_docker

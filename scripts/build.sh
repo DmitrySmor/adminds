@@ -22,6 +22,7 @@ UPDATE_SYSTEM_FILE="$PROJECT_DIR/scripts/src/tasks/update_system.sh"
 NALA_INSTALL_PACKAGES_FILE="$PROJECT_DIR/scripts/src/tasks/nala_install_packages.sh"
 ADD_DOCKER_REPOSITORY_FILE="$PROJECT_DIR/scripts/src/tasks/add_docker_repository.sh"
 NALA_CLEAN_CACHE_FILE="$PROJECT_DIR/scripts/src/tasks/nala_clean_cache.sh"
+START_DOCKER_FILE="$PROJECT_DIR/scripts/src/tasks/start_docker.sh"
 WORKFLOW_FILE="$PROJECT_DIR/scripts/src/workflows/${WORKFLOW_NAME}.sh"
 
 # Определяем директорию и имя итогового файла.
@@ -47,6 +48,7 @@ for file in \
     "$NALA_INSTALL_PACKAGES_FILE" \
     "$ADD_DOCKER_REPOSITORY_FILE" \
     "$NALA_CLEAN_CACHE_FILE" \
+    "$START_DOCKER_FILE" \
     "$WORKFLOW_FILE"; do
     if [[ ! -f "$file" ]]; then
         printf 'Ошибка: файл не найден: %s\n' "$file" >&2
@@ -88,6 +90,7 @@ append_script_content() {
     append_script_content "$UPDATE_SYSTEM_FILE"
     append_script_content "$NALA_INSTALL_PACKAGES_FILE"
     append_script_content "$ADD_DOCKER_REPOSITORY_FILE"
+    append_script_content "$NALA_CLEAN_CACHE_FILE"
     append_script_content "$NALA_CLEAN_CACHE_FILE"
     append_script_content "$WORKFLOW_FILE"
 } >"$OUTPUT_FILE"
