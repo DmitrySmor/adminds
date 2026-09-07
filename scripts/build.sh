@@ -99,6 +99,54 @@ append_script_content() {
     append_script_content "$WORKFLOW_FILE"
 } >"$OUTPUT_FILE"
 
+# Удаляет из итогового скрипта неиспользуемые readonly-переменные,
+# обнаруженные ShellCheck с предупреждением SC2034.
+#
+# Исходные файлы не изменяются.
+# Оптимизируется только итоговый файл сборки.
+remove_unused_readonly_variables() {
+    local shellcheck_output
+    local line_number
+    local variable_name
+    local declaration
+    local lines_to_remove=()
+
+    if ! command -v shellcheck >/dev/null 2>&1; then
+        return
+    fi
+
+    shellcheck_output="$(shellcheck -f gcc "$OUTPUT_FILE" 2>/dev/null || true)"
+
+    while IFS=: read -r _ line_number _ message; do
+        if [[ "$message" != *"[SC2034]"* ]]; then
+            continue
+        fi
+
+        variable_name="$(printf '%s\n' "$message" | sed -n 's/.*warning: \([^ ]*\) appears unused.*/\1/p')"
+
+        if [[ -z "$variable_name" ]]; then
+            continue
+        fi
+
+        declaration="$(sed -n "${line_number}p" "$OUTPUT_FILE")"
+
+        if [[ "$declaration" =~ ^[[:space:]]*readonly[[:space:]]+$variable_name= ]]; then
+            lines_to_remove+=("$line_number")
+        fi
+    done <<<"$shellcheck_output"
+
+    if [[ "${#lines_to_remove[@]}" -eq 0 ]]; then
+        return
+    fi
+
+    for line_number in $(printf '%s\n' "${lines_to_remove[@]}" | sort -rn); do
+        sed -i "${line_number}d" "$OUTPUT_FILE"
+    done
+}
+
+# Удаляем неиспользуемые readonly-переменные из итогового скрипта.
+remove_unused_readonly_variables
+
 # Форматируем итоговый Bash-скрипт, если shfmt установлен.
 if command -v shfmt >/dev/null 2>&1; then
     shfmt -w "$OUTPUT_FILE"

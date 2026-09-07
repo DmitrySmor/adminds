@@ -18,10 +18,22 @@ add_docker_repository() {
 
     chmod a+r /etc/apt/keyrings/docker.asc
 
+    local version_codename
+
+    # shellcheck disable=SC1091
+    source /etc/os-release
+
+    if [[ -z "${VERSION_CODENAME:-}" ]]; then
+        log_error "VERSION_CODENAME не найден в /etc/os-release"
+        exit 1
+    fi
+
+    version_codename="$VERSION_CODENAME"
+
     cat >/etc/apt/sources.list.d/docker.sources <<EOF
 Types: deb
 URIs: https://download.docker.com/linux/debian
-Suites: $(. /etc/os-release && echo "$VERSION_CODENAME")
+Suites: $version_codename
 Components: stable
 Signed-By: /etc/apt/keyrings/docker.asc
 EOF
