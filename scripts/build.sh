@@ -23,6 +23,7 @@ NALA_INSTALL_PACKAGES_FILE="$PROJECT_DIR/scripts/src/tasks/nala_install_packages
 ADD_DOCKER_REPOSITORY_FILE="$PROJECT_DIR/scripts/src/tasks/add_docker_repository.sh"
 NALA_CLEAN_CACHE_FILE="$PROJECT_DIR/scripts/src/tasks/nala_clean_cache.sh"
 START_DOCKER_FILE="$PROJECT_DIR/scripts/src/tasks/start_docker.sh"
+ADD_USER_TO_GROUP_FILE="$PROJECT_DIR/scripts/src/tasks/add_user_to_group.sh"
 WORKFLOW_FILE="$PROJECT_DIR/scripts/src/workflows/${WORKFLOW_NAME}.sh"
 
 # Определяем директорию и имя итогового файла.
@@ -49,6 +50,7 @@ for file in \
     "$ADD_DOCKER_REPOSITORY_FILE" \
     "$NALA_CLEAN_CACHE_FILE" \
     "$START_DOCKER_FILE" \
+    "$ADD_USER_TO_GROUP_FILE" \
     "$WORKFLOW_FILE"; do
     if [[ ! -f "$file" ]]; then
         printf 'Ошибка: файл не найден: %s\n' "$file" >&2
@@ -92,6 +94,7 @@ append_script_content() {
     append_script_content "$ADD_DOCKER_REPOSITORY_FILE"
     append_script_content "$NALA_CLEAN_CACHE_FILE"
     append_script_content "$START_DOCKER_FILE"
+    append_script_content "$ADD_USER_TO_GROUP_FILE"
 
     append_script_content "$WORKFLOW_FILE"
 } >"$OUTPUT_FILE"

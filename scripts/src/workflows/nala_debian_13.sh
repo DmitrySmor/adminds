@@ -54,3 +54,6 @@ nala_clean_cache
 
 log_header "Запуск Docker"
 start_docker
+
+log_header "Добавление пользователя в группы"
+add_user_to_group "$ORIGINAL_USER" docker
