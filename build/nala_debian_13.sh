@@ -288,7 +288,17 @@ EOF
 	log_success "Репозиторий Docker добавлен"
 	log_success "Директория Docker /opt/docker/ создана"
 }
-# === workflow: nala_debian_13 ===
+
+# ============================
+#  Очистка кэша Nala
+# ============================
+# Очищает локальный кэш загруженных пакетов Nala.
+#
+# После очистки выводится подтверждение.
+nala_clean_cache() {
+	nala clean
+	log_success "Кэш Nala очищен"
+}
 
 BASE_PACKAGES=(
 	sudo
@@ -336,3 +346,6 @@ add_docker_repository
 
 log_header "Установка Docker через Nala"
 nala_install_packages "${DOCKER_PACKAGES[@]}"
+
+log_header "Очистка кэша Nala"
+nala_clean_cache

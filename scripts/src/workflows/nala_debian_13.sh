@@ -48,3 +48,6 @@ add_docker_repository
 
 log_header "Установка Docker через Nala"
 nala_install_packages "${DOCKER_PACKAGES[@]}"
+
+log_header "Очистка кэша Nala"
+nala_clean_cache
