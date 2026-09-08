@@ -358,4 +358,5 @@ sudo ./build/nala_debian_13.sh
 
 ## License
 
-See the repository for license information.
+This project is licensed under the GNU General Public License v3.0.
+See the [LICENSE](LICENSE) file for details.
