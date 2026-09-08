@@ -12,15 +12,14 @@ get_base_packages() {
         sudo
         tree
         unzip
-        tar
-        gzip
+        zip
         vim
         git
         htop
         curl
         wget
-        jq
-        apt-transport-https
         ca-certificates
+        gnupg
+        tmux
     )
 }
