@@ -23,6 +23,15 @@ WORKFLOW_FILE="$WORKFLOWS_DIR/${WORKFLOW_NAME}.sh"
 BUILD_DIR="$PROJECT_DIR/build"
 OUTPUT_FILE="$BUILD_DIR/${WORKFLOW_NAME}.sh"
 
+# Статический список библиотек.
+#
+# Библиотеки являются общими для всех standalone-скриптов
+# и подключаются в каждый workflow.
+LIB_FILES=(
+    "$LIB_DIR/colors.sh"
+    "$LIB_DIR/log.sh"
+)
+
 # Проверяем наличие имени workflow.
 if [[ -z "$WORKFLOW_NAME" ]]; then
     printf 'Ошибка: не указан workflow\n' >&2
@@ -48,15 +57,13 @@ for directory in \
     fi
 done
 
-# Получаем список библиотек.
-mapfile -t LIB_FILES < <(
-    find "$LIB_DIR" \
-        -maxdepth 1 \
-        -type f \
-        -name '*.sh' \
-        -print |
-        sort
-)
+# Проверяем наличие библиотек.
+for file in "${LIB_FILES[@]}"; do
+    if [[ ! -f "$file" ]]; then
+        printf 'Ошибка: библиотека не найдена: %s\n' "$file" >&2
+        exit 1
+    fi
+done
 
 # Получаем список tasks.
 mapfile -t TASK_FILES < <(
@@ -68,17 +75,103 @@ mapfile -t TASK_FILES < <(
         sort
 )
 
-# Проверяем наличие библиотек.
-if [[ "${#LIB_FILES[@]}" -eq 0 ]]; then
-    printf 'Ошибка: библиотеки не найдены: %s\n' "$LIB_DIR" >&2
-    exit 1
-fi
-
 # Проверяем наличие tasks.
 if [[ "${#TASK_FILES[@]}" -eq 0 ]]; then
     printf 'Ошибка: tasks не найдены: %s\n' "$TASKS_DIR" >&2
     exit 1
 fi
+
+# Проверяем Bash-синтаксис исходных файлов.
+for file in "${LIB_FILES[@]}" "${TASK_FILES[@]}" "$WORKFLOW_FILE"; do
+    if ! bash -n "$file"; then
+        printf 'Ошибка: некорректный Bash-синтаксис: %s\n' "$file" >&2
+        exit 1
+    fi
+done
+
+# Создаём реестр функций tasks.
+#
+# Формат:
+#
+# TASK_FUNCTIONS["имя_функции"]="путь_к_task"
+#
+# Например:
+#
+# TASK_FUNCTIONS["get_base_packages"]=".../tasks/base_packages.sh"
+declare -A TASK_FUNCTIONS=()
+
+for file in "${TASK_FILES[@]}"; do
+    while IFS= read -r function_name; do
+        if [[ -n "${TASK_FUNCTIONS[$function_name]:-}" ]]; then
+            printf \
+                'Ошибка: функция "%s" определена более чем в одном task:\n' \
+                "$function_name" \
+                >&2
+
+            printf '  %s\n' "${TASK_FUNCTIONS[$function_name]}" >&2
+            printf '  %s\n' "$file" >&2
+
+            exit 1
+        fi
+
+        TASK_FUNCTIONS["$function_name"]="$file"
+    done < <(
+        sed -nE \
+            's/^[[:space:]]*(function[[:space:]]+)?([a-zA-Z_][a-zA-Z0-9_]*)[[:space:]]*\(\)[[:space:]]*\{.*$/\2/p' \
+            "$file"
+    )
+done
+
+# Определяем tasks, используемые workflow.
+#
+# Workflow является источником истины:
+# task попадает в итоговый скрипт только в том случае,
+# если его функция вызывается непосредственно в workflow.
+declare -A USED_TASKS=()
+
+while IFS= read -r line; do
+    # Убираем начальные пробелы.
+    line="${line#"${line%%[![:space:]]*}"}"
+
+    # Пропускаем пустые строки.
+    [[ -z "$line" ]] && continue
+
+    # Пропускаем комментарии.
+    [[ "$line" == \#* ]] && continue
+
+    # Пропускаем присваивания переменных и массивов.
+    #
+    # Например:
+    #
+    # BASE_PACKAGES=(
+    # DOCKER_PACKAGES=(
+    [[ "$line" == *=* ]] && continue
+
+    # Получаем первое слово строки.
+    read -r function_name _ <<<"$line"
+
+    # Убираем () у вызова вида:
+    #
+    # function_name()
+    function_name="${function_name%\(\)}"
+
+    # Если функция является task,
+    # добавляем соответствующий файл в сборку.
+    if [[ -n "${TASK_FUNCTIONS[$function_name]:-}" ]]; then
+        USED_TASKS["${TASK_FUNCTIONS[$function_name]}"]=1
+    fi
+
+done <"$WORKFLOW_FILE"
+
+# Формируем список используемых tasks
+# в стабильном порядке.
+USED_TASK_FILES=()
+
+for file in "${TASK_FILES[@]}"; do
+    if [[ -n "${USED_TASKS[$file]:-}" ]]; then
+        USED_TASK_FILES+=("$file")
+    fi
+done
 
 # Создаём директорию для результатов сборки.
 mkdir -p "$BUILD_DIR"
@@ -101,20 +194,21 @@ append_script_content() {
 # Порядок:
 # 1. shebang и настройки Bash;
 # 2. библиотеки;
-# 3. tasks;
+# 3. используемые tasks;
 # 4. выбранный workflow.
 {
     printf '#!/usr/bin/env bash\n\n'
     printf 'set -euo pipefail\n\n'
 
-    # Подключаем библиотеки.
+    # Подключаем все библиотеки.
     for file in "${LIB_FILES[@]}"; do
         append_script_content "$file"
         printf '\n'
     done
 
-    # Подключаем tasks.
-    for file in "${TASK_FILES[@]}"; do
+    # Подключаем только tasks,
+    # используемые workflow.
+    for file in "${USED_TASK_FILES[@]}"; do
         append_script_content "$file"
         printf '\n'
     done
@@ -196,7 +290,15 @@ chmod +x "$OUTPUT_FILE"
 printf '\n'
 printf 'Сборка завершена:\n'
 printf '  Workflow: %s\n' "$WORKFLOW_NAME"
+printf '  Tasks:    %s\n' "${#USED_TASK_FILES[@]}"
 printf '  Output:   %s\n' "$OUTPUT_FILE"
+
+printf '\n'
+printf 'Подключённые tasks:\n'
+
+for file in "${USED_TASK_FILES[@]}"; do
+    printf '  - %s\n' "$(basename "$file")"
+done
 
 printf '\n'
 printf 'Запуск на сервере:\n'
