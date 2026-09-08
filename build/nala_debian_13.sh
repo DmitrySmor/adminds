@@ -375,16 +375,15 @@ BASE_PACKAGES=(
 	sudo
 	tree
 	unzip
-	tar
-	gzip
+	zip
 	vim
 	git
 	htop
 	curl
 	wget
-	jq
-	apt-transport-https
 	ca-certificates
+	gnupg
+	tmux
 )
 
 log_header "Установка пакетов через Nala"
