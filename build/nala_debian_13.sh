@@ -128,22 +128,64 @@ log_header() {
 }
 
 # ============================
-#  Проверка прав root
+#  Добавление пользователя в группы
 # ============================
-# Проверяет, запущен ли скрипт с правами пользователя root.
+# Определяет исходного пользователя через SUDO_USER или USER
+# и добавляет его в одну или несколько существующих групп.
 #
-# При отсутствии прав root выполнение скрипта прекращается
-# с сообщением об ошибке.
+# Группы передаются аргументами функции.
 #
-# При успешной проверке выводится подтверждение.
-check_root() {
-	if [[ "$EUID" -ne 0 ]]; then
-		log_error "Скрипт должен быть запущен от имени root"
+# Например:
+#   add_user_to_group docker
+#
+# Или:
+#   add_user_to_group sudo www-data developers
+#
+# Перед добавлением проверяется наличие пользователя
+# и каждой указанной группы.
+add_user_to_group() {
+	local user="${SUDO_USER:-$USER}"
+
+	if ! id "$user" >/dev/null 2>&1; then
+		log_error "Пользователь не найден: $user"
 		exit 1
 	fi
 
-	id
-	log_success "Права root подтверждены"
+	for group in "$@"; do
+		if ! getent group "$group" >/dev/null 2>&1; then
+			log_error "Группа не найдена: $group"
+			exit 1
+		fi
+
+		usermod -aG "$group" "$user"
+		log_success "Пользователь $user добавлен в группу $group"
+	done
+
+	log_info "Группы пользователя $user:"
+	id "$user"
+}
+
+# ============================
+#  Базовые пакеты
+# ============================
+# Общие пакеты, необходимые для
+# базовой настройки Debian.
+get_base_packages() {
+	BASE_PACKAGES=(
+		sudo
+		tree
+		unzip
+		tar
+		gzip
+		vim
+		git
+		htop
+		curl
+		wget
+		jq
+		apt-transport-https
+		ca-certificates
+	)
 }
 
 # ============================
@@ -174,6 +216,25 @@ check_os() {
 
 	cat /etc/os-release
 	log_success "Операционная система: Debian $VERSION_ID"
+}
+
+# ============================
+#  Проверка прав root
+# ============================
+# Проверяет, запущен ли скрипт с правами пользователя root.
+#
+# При отсутствии прав root выполнение скрипта прекращается
+# с сообщением об ошибке.
+#
+# При успешной проверке выводится подтверждение.
+check_root() {
+	if [[ "$EUID" -ne 0 ]]; then
+		log_error "Скрипт должен быть запущен от имени root"
+		exit 1
+	fi
+
+	id
+	log_success "Права root подтверждены"
 }
 
 # ============================
@@ -212,40 +273,6 @@ configure_timezone() {
 
 	timedatectl
 	log_success "Часовой пояс установлен: $timezone"
-}
-
-# ============================
-#  Обновление списка пакетов
-# ============================
-# Обновляет локальный список доступных пакетов
-# из настроенных репозиториев Debian.
-#
-# После успешного выполнения выводится подтверждение обновления.
-update_system() {
-	apt-get update
-	log_success "Список пакетов обновлён"
-}
-
-# ============================
-#  Установка пакетов через Nala
-# ============================
-# Проверяет наличие Nala и устанавливает его через APT,
-# если Nala ещё не установлен.
-#
-# После установки Nala устанавливает переданные пакеты.
-#
-# Например: nala_install_packages curl git vim
-nala_install_packages() {
-	if ! command -v nala >/dev/null 2>&1; then
-		apt-get install -y nala
-		if ! command -v nala >/dev/null 2>&1; then
-			log_error "Nala не установлен"
-			exit 1
-		fi
-		log_success "Nala установлен"
-	fi
-	nala install -y "$@"
-	log_success "Пакеты установлены"
 }
 
 # ============================
@@ -293,17 +320,6 @@ EOF
 }
 
 # ============================
-#  Очистка кэша Nala
-# ============================
-# Очищает локальный кэш загруженных пакетов Nala.
-#
-# После очистки выводится подтверждение.
-nala_clean_cache() {
-	nala clean
-	log_success "Кэш Nala очищен"
-}
-
-# ============================
 #  Запуск Docker
 # ============================
 # Включает Docker при загрузке системы
@@ -318,65 +334,300 @@ start_docker() {
 }
 
 # ============================
-#  Добавление пользователя в группы
+#  Установка GitHub Actions Runner
 # ============================
-# Определяет исходного пользователя через SUDO_USER или USER
-# и добавляет его в одну или несколько существующих групп.
+# Создаёт пользователя github-runner,
+# получает последнюю версию GitHub Actions Runner,
+# скачивает и устанавливает Runner,
+# запрашивает URL репозитория и registration token,
+# регистрирует Runner и запускает его как systemd service.
 #
-# Группы передаются аргументами функции.
-#
-# Например:
-#   add_user_to_group docker
-#
-# Или:
-#   add_user_to_group sudo www-data developers
-#
-# Перед добавлением проверяется наличие пользователя
-# и каждой указанной группы.
-add_user_to_group() {
-	local user="${SUDO_USER:-$USER}"
+# Runner получает имя:
+# github-runner-<repository>
 
-	if ! id "$user" >/dev/null 2>&1; then
-		log_error "Пользователь не найден: $user"
+github_runner_install() {
+	local RUNNER_USER="github-runner"
+	local RUNNER_HOME="/home/${RUNNER_USER}"
+	local RUNNER_DIR="${RUNNER_HOME}/actions-runner"
+
+	local REPOSITORY_URL=""
+	local REPOSITORY_NAME=""
+	local REGISTRATION_TOKEN=""
+
+	local RUNNER_NAME=""
+	local RUNNER_VERSION=""
+	local RUNNER_ARCH=""
+	local RUNNER_PACKAGE=""
+	local RUNNER_URL=""
+	local RUNNER_ARCHIVE="/tmp/github-actions-runner.tar.gz"
+
+	# Проверка зависимостей
+	log_step "Проверка зависимостей..."
+
+	for command in curl tar jq; do
+		if ! command -v "$command" >/dev/null 2>&1; then
+			log_error "Необходимая команда не найдена: ${command}"
+			exit 1
+		fi
+	done
+
+	log_success "Зависимости проверены"
+
+	# Создание пользователя
+	log_step "Создание пользователя ${RUNNER_USER}..."
+
+	if id "$RUNNER_USER" >/dev/null 2>&1; then
+		log_success "Пользователь ${RUNNER_USER} уже существует"
+	else
+		useradd \
+			--create-home \
+			--home-dir "$RUNNER_HOME" \
+			--shell /bin/bash \
+			--comment "" \
+			"$RUNNER_USER"
+
+		log_success "Пользователь ${RUNNER_USER} создан"
+	fi
+
+	# Определение архитектуры
+	log_step "Определение архитектуры..."
+
+	case "$(uname -m)" in
+	x86_64)
+		RUNNER_ARCH="x64"
+		;;
+
+	aarch64)
+		RUNNER_ARCH="arm64"
+		;;
+
+	*)
+		log_error "Неподдерживаемая архитектура: $(uname -m)"
+		exit 1
+		;;
+	esac
+
+	log_success "Архитектура: ${RUNNER_ARCH}"
+
+	# Получение последней версии Runner
+	log_step "Получение последней версии actions/runner..."
+
+	RUNNER_VERSION="$(
+		curl \
+			--fail \
+			--silent \
+			--show-error \
+			--location \
+			--header "Accept: application/vnd.github+json" \
+			"https://api.github.com/repos/actions/runner/releases/latest" |
+			jq -r '.tag_name'
+	)"
+
+	if [[ -z "$RUNNER_VERSION" || "$RUNNER_VERSION" == "null" ]]; then
+		log_error "Не удалось получить последнюю версию actions/runner"
 		exit 1
 	fi
 
-	for group in "$@"; do
-		if ! getent group "$group" >/dev/null 2>&1; then
-			log_error "Группа не найдена: $group"
-			exit 1
-		fi
+	log_success "Последняя версия: ${RUNNER_VERSION}"
 
-		usermod -aG "$group" "$user"
-		log_success "Пользователь $user добавлен в группу $group"
-	done
+	# Формирование URL Runner
+	RUNNER_PACKAGE="actions-runner-linux-${RUNNER_ARCH}-${RUNNER_VERSION#v}.tar.gz"
 
-	log_info "Группы пользователя $user:"
-	id "$user"
+	RUNNER_URL="https://github.com/actions/runner/releases/download/${RUNNER_VERSION}/${RUNNER_PACKAGE}"
+
+	# Получение URL репозитория
+	printf '\n'
+	printf 'GitHub repository URL\n'
+	printf 'Пример: https://github.com/DmitrySmor/ansibleds\n'
+	printf 'URL: '
+
+	read -r REPOSITORY_URL
+
+	if [[ -z "$REPOSITORY_URL" ]]; then
+		log_error "URL репозитория не может быть пустым"
+		exit 1
+	fi
+
+	# Удаление завершающего /
+	REPOSITORY_URL="${REPOSITORY_URL%/}"
+
+	# Определение имени репозитория
+	REPOSITORY_NAME="${REPOSITORY_URL##*/}"
+	REPOSITORY_NAME="${REPOSITORY_NAME%.git}"
+
+	if [[ -z "$REPOSITORY_NAME" ]]; then
+		log_error "Не удалось определить имя репозитория"
+		exit 1
+	fi
+
+	RUNNER_NAME="github-runner-${REPOSITORY_NAME}"
+
+	log_success "Репозиторий: ${REPOSITORY_NAME}"
+	log_success "Имя Runner: ${RUNNER_NAME}"
+
+	# Получение registration token
+	printf '\n'
+	printf 'GitHub Actions Runner registration token\n'
+	printf 'Token: '
+
+	read -rs REGISTRATION_TOKEN
+	printf '\n'
+
+	if [[ -z "$REGISTRATION_TOKEN" ]]; then
+		log_error "Registration token не может быть пустым"
+		exit 1
+	fi
+
+	# Подготовка директории Runner
+	log_step "Подготовка GitHub Actions Runner..."
+
+	mkdir -p "$RUNNER_DIR"
+
+	find \
+		"$RUNNER_DIR" \
+		-mindepth 1 \
+		-maxdepth 1 \
+		-exec rm -rf {} +
+
+	# Скачивание Runner
+	log_step "Скачивание ${RUNNER_PACKAGE}..."
+
+	curl \
+		--fail \
+		--silent \
+		--show-error \
+		--location \
+		--output "$RUNNER_ARCHIVE" \
+		"$RUNNER_URL"
+
+	log_success "Runner скачан"
+
+	# Распаковка Runner
+	log_step "Распаковка GitHub Actions Runner..."
+
+	tar \
+		--extract \
+		--gzip \
+		--file "$RUNNER_ARCHIVE" \
+		--directory "$RUNNER_DIR"
+
+	rm -f "$RUNNER_ARCHIVE"
+
+	log_success "Runner распакован"
+
+	# Установка зависимостей Runner
+	log_step "Установка зависимостей GitHub Actions Runner..."
+
+	"$RUNNER_DIR/bin/installdependencies.sh"
+
+	log_success "Зависимости Runner установлены"
+
+	# Установка владельца
+	log_step "Настройка владельца файлов Runner..."
+
+	chown \
+		--recursive \
+		"${RUNNER_USER}:${RUNNER_USER}" \
+		"$RUNNER_DIR"
+
+	log_success "Права доступа настроены"
+
+	# Регистрация Runner
+	log_step "Регистрация GitHub Actions Runner..."
+
+	runuser \
+		--user "$RUNNER_USER" \
+		--command "
+            cd '$RUNNER_DIR' &&
+            ./config.sh \
+                --unattended \
+                --url '$REPOSITORY_URL' \
+                --token '$REGISTRATION_TOKEN' \
+                --name '$RUNNER_NAME' \
+                --labels 'self-hosted,linux,${RUNNER_ARCH},ansible' \
+                --replace
+        "
+
+	unset REGISTRATION_TOKEN
+
+	log_success "Runner зарегистрирован"
+
+	# Установка systemd service
+	log_step "Установка systemd service..."
+
+	"$RUNNER_DIR/svc.sh" install "$RUNNER_USER"
+
+	log_success "Systemd service установлен"
+
+	# Запуск Runner
+	log_step "Запуск GitHub Actions Runner..."
+
+	"$RUNNER_DIR/svc.sh" start
+
+	log_success "GitHub Actions Runner запущен"
+
+	# Проверка Runner
+	log_step "Проверка состояния Runner..."
+
+	"$RUNNER_DIR/svc.sh" status
+
+	log_success "GitHub Actions Runner успешно установлен"
+
+	# Информация
+	printf '\n'
+	log_success "Информация о Runner:"
+	printf '  User:       %s\n' "$RUNNER_USER"
+	printf '  Name:       %s\n' "$RUNNER_NAME"
+	printf '  Repository: %s\n' "$REPOSITORY_URL"
+	printf '  Version:    %s\n' "$RUNNER_VERSION"
+	printf '  Directory:  %s\n' "$RUNNER_DIR"
+	printf '  Labels:     self-hosted, linux, %s, ansible\n' "$RUNNER_ARCH"
 }
 
-BASE_PACKAGES=(
-	sudo
-	tree
-	unzip
-	tar
-	gzip
-	vim
-	git
-	htop
-	curl
-	wget
-	apt-transport-https
-	ca-certificates
-)
+# ============================
+#  Очистка кэша Nala
+# ============================
+# Очищает локальный кэш загруженных пакетов Nala.
+#
+# После очистки выводится подтверждение.
+nala_clean_cache() {
+	nala clean
+	log_success "Кэш Nala очищен"
+}
 
-DOCKER_PACKAGES=(
-	docker-ce
-	docker-ce-cli
-	containerd.io
-	docker-buildx-plugin
-	docker-compose-plugin
-)
+# ============================
+#  Установка пакетов через Nala
+# ============================
+# Проверяет наличие Nala и устанавливает его через APT,
+# если Nala ещё не установлен.
+#
+# После установки Nala устанавливает переданные пакеты.
+#
+# Например: nala_install_packages curl git vim
+nala_install_packages() {
+	if ! command -v nala >/dev/null 2>&1; then
+		apt-get install -y nala
+		if ! command -v nala >/dev/null 2>&1; then
+			log_error "Nala не установлен"
+			exit 1
+		fi
+		log_success "Nala установлен"
+	fi
+	nala install -y "$@"
+	log_success "Пакеты установлены"
+}
+
+# ============================
+#  Обновление списка пакетов
+# ============================
+# Обновляет локальный список доступных пакетов
+# из настроенных репозиториев Debian.
+#
+# После успешного выполнения выводится подтверждение обновления.
+update_system() {
+	apt-get update
+	log_success "Список пакетов обновлён"
+}
 
 log_header "Проверка прав root"
 check_root
@@ -394,10 +645,21 @@ log_header "Обновление списка пакетов"
 update_system
 
 log_header "Установка пакетов через Nala"
+# Получение списка базовых пакетов BASE_PACKAGES
+get_base_packages
 nala_install_packages "${BASE_PACKAGES[@]}"
 
 log_header "Добавление репозитория Docker"
 add_docker_repository
+
+# Список пакетов для докера
+DOCKER_PACKAGES=(
+	docker-ce
+	docker-ce-cli
+	containerd.io
+	docker-buildx-plugin
+	docker-compose-plugin
+)
 
 log_header "Установка Docker через Nala"
 nala_install_packages "${DOCKER_PACKAGES[@]}"
