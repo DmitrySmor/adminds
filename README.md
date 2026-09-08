@@ -3,7 +3,7 @@
 ### Настрока сисетмы через Nala (стандарные пакеты + docker)
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/DmitrySmor/adminds/refs/heads/main/scripts/bootstrap/nala_debian_13.sh | sudo bash
+curl -fsSL https://raw.githubusercontent.com/DmitrySmor/adminds/main/build/nala_debian_13.sh | sudo bash
 ```
 
 ### Установка Hawser-агента в Edge Mode
