@@ -146,6 +146,11 @@ log_header() {
 add_user_to_group() {
 	local user="${SUDO_USER:-$USER}"
 
+	if [[ "$user" == "root" ]]; then
+		log_info "Пользователь root не добавляется в группы"
+		return 0
+	fi
+
 	if ! id "$user" >/dev/null 2>&1; then
 		log_error "Пользователь не найден: $user"
 		exit 1
@@ -155,6 +160,11 @@ add_user_to_group() {
 		if ! getent group "$group" >/dev/null 2>&1; then
 			log_error "Группа не найдена: $group"
 			exit 1
+		fi
+
+		if id -nG "$user" | grep -qw "$group"; then
+			log_info "Пользователь $user уже состоит в группе $group"
+			continue
 		fi
 
 		usermod -aG "$group" "$user"
