@@ -166,28 +166,6 @@ add_user_to_group() {
 }
 
 # ============================
-#  Базовые пакеты
-# ============================
-# Общие пакеты, необходимые для
-# базовой настройки Debian.
-get_base_packages() {
-	BASE_PACKAGES=(
-		sudo
-		tree
-		unzip
-		zip
-		vim
-		git
-		htop
-		curl
-		wget
-		ca-certificates
-		gnupg
-		tmux
-	)
-}
-
-# ============================
 #  Проверка операционной системы
 # ============================
 # Проверяет наличие файла /etc/os-release,
@@ -392,9 +370,24 @@ configure_timezone
 log_header "Обновление списка пакетов"
 update_system
 
+# Список пакетов БАЗОВЫЙ
+BASE_PACKAGES=(
+	sudo
+	tree
+	unzip
+	tar
+	gzip
+	vim
+	git
+	htop
+	curl
+	wget
+	jq
+	apt-transport-https
+	ca-certificates
+)
+
 log_header "Установка пакетов через Nala"
-# Получение списка базовых пакетов BASE_PACKAGES
-get_base_packages
 nala_install_packages "${BASE_PACKAGES[@]}"
 
 log_header "Добавление репозитория Docker"

@@ -17,9 +17,24 @@ configure_timezone
 log_header "Обновление списка пакетов"
 update_system
 
+# Список пакетов БАЗОВЫЙ
+BASE_PACKAGES=(
+    sudo
+    tree
+    unzip
+    tar
+    gzip
+    vim
+    git
+    htop
+    curl
+    wget
+    jq
+    apt-transport-https
+    ca-certificates
+)
+
 log_header "Установка пакетов через Nala"
-# Получение списка базовых пакетов BASE_PACKAGES
-get_base_packages
 nala_install_packages "${BASE_PACKAGES[@]}"
 
 log_header "Добавление репозитория Docker"
