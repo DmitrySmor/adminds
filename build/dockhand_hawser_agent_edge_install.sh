@@ -290,7 +290,7 @@ hawser_edge_check() {
 	else
 		log_error "конфиг отсутствует — ${HAWSER_CONFIG_PATH}"
 		log_info "DOCKHAND_SERVER_URL — default: ${DOCKHAND_SERVER_URL}"
-		log_info "TOKEN — default: не задан"
+		log_error "TOKEN: не задан"
 	fi
 
 	# --- сервис enabled ---
