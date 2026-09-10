@@ -49,7 +49,7 @@ hawser_edge_check() {
     aarch64 | arm64) arch="arm64" ;;
     armv7l | armv7 | arm) arch="arm" ;;
     *)
-        log_warning "неподдерживаемая архитектура — ${raw_arch}"
+        log_error "неподдерживаемая архитектура — ${raw_arch}"
         arch=""
         ;;
     esac
@@ -57,81 +57,80 @@ hawser_edge_check() {
 
     # --- systemctl ---
     if command -v systemctl >/dev/null 2>&1; then
-        log_info "systemctl — OK"
+        log_success "systemctl — OK"
     else
-        log_warning "systemctl не найден"
+        log_error "systemctl не найден"
     fi
 
     # --- docker.service существует ---
     if systemctl list-unit-files 2>/dev/null | grep -q '^docker\.service'; then
-        log_info "docker.service найден"
+        log_success "docker.service найден"
     else
-        log_warning "docker.service не найден"
+        log_error "docker.service не найден"
     fi
 
     # --- docker socket ---
     if [[ -S "${HAWSER_DOCKER_SOCKET}" ]]; then
-        log_info "${HAWSER_DOCKER_SOCKET} — OK"
+        log_success "${HAWSER_DOCKER_SOCKET} — OK"
     else
-        log_warning "${HAWSER_DOCKER_SOCKET} не найден"
+        log_error "${HAWSER_DOCKER_SOCKET} не найден"
     fi
 
     # --- docker.service active ---
     if systemctl is-active --quiet docker 2>/dev/null; then
-        log_info "docker.service активен"
+        log_success "docker.service активен"
     else
-        log_warning "docker.service не активен"
+        log_error "docker.service не активен"
     fi
 
     # --- GitHub API ---
     if curl -fsSL --max-time 10 \
         "https://api.github.com/repos/Finsys/hawser/releases/latest" \
         >/dev/null 2>&1; then
-        log_info "GitHub API доступен"
+        log_success "GitHub API доступен"
     else
-        log_warning "GitHub API недоступен"
+        log_error "GitHub API недоступен"
     fi
 
     # ==========================================================
     # Группа 2: Состояние установки
     # ==========================================================
-    log_info "=== Hawser Edge: состояние установки ==="
 
     # --- бинарник ---
     if [[ -x "${HAWSER_BIN_PATH}" ]]; then
-        log_info "бинарник найден — ${HAWSER_BIN_PATH}"
+        log_success "бинарник найден — ${HAWSER_BIN_PATH}"
     else
-        log_info "бинарник отсутствует"
+        log_error "бинарник отсутствует"
     fi
 
     # --- systemd unit ---
     if [[ -f "${HAWSER_UNIT_PATH}" ]]; then
-        log_info "unit найден — ${HAWSER_UNIT_PATH}"
+        log_success "unit найден — ${HAWSER_UNIT_PATH}"
     else
-        log_info "unit отсутствует"
+        log_error "unit отсутствует"
     fi
 
     # --- конфиг ---
     if [[ -f "${HAWSER_CONFIG_PATH}" ]]; then
-        log_info "конфиг найден — ${HAWSER_CONFIG_PATH}"
+        log_success "конфиг найден — ${HAWSER_CONFIG_PATH}"
     else
-        log_info "конфиг отсутствует"
+        log_error "конфиг отсутствует"
     fi
 
     # --- сервис enabled ---
     if systemctl is-enabled --quiet "${HAWSER_SERVICE_NAME}" 2>/dev/null; then
         HAWSER_SERVICE_ENABLED="true"
-        log_info "сервис в автозапуске"
+        log_success "сервис в автозапуске"
     else
-        log_info "сервис не в автозапуске"
+        log_error "сервис не в автозапуске"
     fi
 
     # --- сервис active ---
     if systemctl is-active --quiet "${HAWSER_SERVICE_NAME}" 2>/dev/null; then
         HAWSER_SERVICE_ACTIVE="true"
-        log_info "сервис активен"
+        log_success "сервис активен"
     else
-        log_info "сервис не активен"
+        log_error "сервис не активен"
     fi
 
     # --- версия (только вывод) ---
