@@ -15,5 +15,5 @@ check_root
 log_header "Проверка Hawser Edge"
 hawser_edge_check
 
-# log_header "Установка Hawser Edge"
-# hawser_edge_install
+log_header "Установка Hawser Edge"
+hawser_edge_install

@@ -181,8 +181,6 @@ hawser_edge_check() {
 	HAWSER_SERVICE_ACTIVE="false"
 	HAWSER_SERVICE_ENABLED="false"
 
-	log_info "=== Hawser Edge: проверка системы ==="
-
 	# ==========================================================
 	# Группа 1: Pre-flight проверки (логируются, не блокируют)
 	# ==========================================================
@@ -195,7 +193,7 @@ hawser_edge_check() {
 	aarch64 | arm64) arch="arm64" ;;
 	armv7l | armv7 | arm) arch="arm" ;;
 	*)
-		log_warn "неподдерживаемая архитектура — ${raw_arch}"
+		log_warning "неподдерживаемая архитектура — ${raw_arch}"
 		arch=""
 		;;
 	esac
@@ -205,28 +203,28 @@ hawser_edge_check() {
 	if command -v systemctl >/dev/null 2>&1; then
 		log_info "systemctl — OK"
 	else
-		log_warn "systemctl не найден"
+		log_warning "systemctl не найден"
 	fi
 
 	# --- docker.service существует ---
 	if systemctl list-unit-files 2>/dev/null | grep -q '^docker\.service'; then
 		log_info "docker.service найден"
 	else
-		log_warn "docker.service не найден"
+		log_warning "docker.service не найден"
 	fi
 
 	# --- docker socket ---
 	if [[ -S "${HAWSER_DOCKER_SOCKET}" ]]; then
 		log_info "${HAWSER_DOCKER_SOCKET} — OK"
 	else
-		log_warn "${HAWSER_DOCKER_SOCKET} не найден"
+		log_warning "${HAWSER_DOCKER_SOCKET} не найден"
 	fi
 
 	# --- docker.service active ---
 	if systemctl is-active --quiet docker 2>/dev/null; then
 		log_info "docker.service активен"
 	else
-		log_warn "docker.service не активен"
+		log_warning "docker.service не активен"
 	fi
 
 	# --- GitHub API ---
@@ -235,7 +233,7 @@ hawser_edge_check() {
 		>/dev/null 2>&1; then
 		log_info "GitHub API доступен"
 	else
-		log_warn "GitHub API недоступен"
+		log_warning "GitHub API недоступен"
 	fi
 
 	# ==========================================================
@@ -310,5 +308,5 @@ check_root
 log_header "Проверка Hawser Edge"
 hawser_edge_check
 
-# log_header "Установка Hawser Edge"
-# hawser_edge_install
+log_header "Установка Hawser Edge"
+hawser_edge_install
