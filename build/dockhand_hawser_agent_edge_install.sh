@@ -207,7 +207,7 @@ hawser_edge_check() {
 		arch=""
 		;;
 	esac
-	[[ -n "${arch}" ]] && log_info "архитектура — ${arch}"
+	[[ -n "${arch}" ]] && log_success "архитектура — ${arch}"
 
 	# --- systemctl ---
 	if command -v systemctl >/dev/null 2>&1; then
@@ -313,7 +313,7 @@ hawser_edge_check() {
 	if [[ -x "${HAWSER_BIN_PATH}" ]]; then
 		local version
 		version="$("${HAWSER_BIN_PATH}" --version 2>/dev/null | head -n1 || true)"
-		[[ -n "${version}" ]] && log_info "версия — ${version}"
+		[[ -n "${version}" ]] && log_success "версия — ${version}"
 	fi
 
 	# --- Итог: установлен ли агент ---
@@ -322,7 +322,7 @@ hawser_edge_check() {
 		log_info "Результат: Hawser Edge установлен"
 	else
 		HAWSER_INSTALLED="false"
-		log_info "Результат: Hawser Edge не установлен"
+		log_success "Результат: Hawser Edge не установлен"
 	fi
 }
 
