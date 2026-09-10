@@ -166,13 +166,23 @@ HAWSER_CONFIG_PATH="/etc/hawser/config"
 HAWSER_STACKS_DIR="/opt/docker"
 HAWSER_DOCKER_SOCKET="/var/run/docker.sock"
 HAWSER_SERVICE_NAME="hawser.service"
-#
+
+# --- Параметры подключения по умолчанию ---
+# Используются, если конфиг отсутствует или параметр в нём не задан.
+# Проверяются в конфиге /etc/hawser/config:
+#   DOCKHAND_SERVER_URL — URL сервера Dockhand
+#   TOKEN               — токен агента из Dockhand
+DOCKHAND_SERVER_URL="dockhand.energo-effect.pro"
+DOCKHAND_SERVER_TOKEN=""
+
 # ------------------------------------------------------------------------------
 # Глобальные переменные (результат):
 # ------------------------------------------------------------------------------
 #   HAWSER_INSTALLED          true/false — агент установлен
 #   HAWSER_SERVICE_ACTIVE     true/false — сервис запущен
 #   HAWSER_SERVICE_ENABLED    true/false — сервис в автозапуске
+#   DOCKHAND_SERVER_URL       строка     — URL Dockhand (из конфига или default)
+#   DOCKHAND_SERVER_TOKEN     строка     — токен агента (из конфига или default)
 # ==============================================================================
 
 hawser_edge_check() {
@@ -257,8 +267,30 @@ hawser_edge_check() {
 	# --- конфиг ---
 	if [[ -f "${HAWSER_CONFIG_PATH}" ]]; then
 		log_success "конфиг найден — ${HAWSER_CONFIG_PATH}"
+
+		# --- DOCKHAND_SERVER_URL ---
+		local cfg_url
+		cfg_url="$(grep -E '^DOCKHAND_SERVER_URL=' "${HAWSER_CONFIG_PATH}" 2>/dev/null | head -n1 | cut -d= -f2- || true)"
+		if [[ -n "${cfg_url}" ]]; then
+			DOCKHAND_SERVER_URL="${cfg_url}"
+			log_success "DOCKHAND_SERVER_URL — ${DOCKHAND_SERVER_URL}"
+		else
+			log_error "DOCKHAND_SERVER_URL не задан, default: ${DOCKHAND_SERVER_URL}"
+		fi
+
+		# --- TOKEN ---
+		local cfg_token
+		cfg_token="$(grep -E '^TOKEN=' "${HAWSER_CONFIG_PATH}" 2>/dev/null | head -n1 | cut -d= -f2- || true)"
+		if [[ -n "${cfg_token}" ]]; then
+			DOCKHAND_SERVER_TOKEN="${cfg_token}"
+			log_success "TOKEN — задан"
+		else
+			log_error "TOKEN — не задан"
+		fi
 	else
-		log_error "конфиг отсутствует"
+		log_error "конфиг отсутствует — ${HAWSER_CONFIG_PATH}"
+		log_info "DOCKHAND_SERVER_URL — default: ${DOCKHAND_SERVER_URL}"
+		log_info "TOKEN — default: не задан"
 	fi
 
 	# --- сервис enabled ---
@@ -292,6 +324,10 @@ hawser_edge_check() {
 		HAWSER_INSTALLED="false"
 		log_info "Результат: Hawser Edge не установлен"
 	fi
+}
+
+hawser_edge_install() {
+	echo "процендура установки"
 }
 
 # ------------------------------------------------------------------------------
