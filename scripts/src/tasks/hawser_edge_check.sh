@@ -72,20 +72,6 @@ hawser_edge_check() {
         log_error "systemctl не найден"
     fi
 
-    # --- docker.service существует ---
-    if systemctl list-unit-files 2>/dev/null | grep -q '^docker\.service'; then
-        log_success "docker.service найден"
-    else
-        log_error "docker.service не найден"
-    fi
-
-    # --- docker socket ---
-    if [[ -S "${HAWSER_DOCKER_SOCKET}" ]]; then
-        log_success "${HAWSER_DOCKER_SOCKET} — OK"
-    else
-        log_error "${HAWSER_DOCKER_SOCKET} не найден"
-    fi
-
     # --- docker.service active ---
     if systemctl is-active --quiet docker 2>/dev/null; then
         log_success "docker.service активен"
@@ -175,9 +161,9 @@ hawser_edge_check() {
     # --- Итог: установлен ли агент ---
     if [[ -x "${HAWSER_BIN_PATH}" ]] && [[ -f "${HAWSER_UNIT_PATH}" ]]; then
         HAWSER_INSTALLED="true"
-        log_info "Результат: Hawser Edge установлен"
+        log_success "Hawser Edge установлен"
     else
         HAWSER_INSTALLED="false"
-        log_success "Результат: Hawser Edge не установлен"
+        log_error "Hawser Edge не установлен"
     fi
 }
