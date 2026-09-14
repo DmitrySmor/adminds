@@ -17,7 +17,7 @@
 Workflow выполняет стандартную подготовку системы, установку необходимых пакетов и Docker.
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/DmitrySmor/adminds/main/build/nala_debian_13.sh | sudo bash
+apt update && apt install -y && curl -fsSL https://raw.githubusercontent.com/DmitrySmor/adminds/main/build/nala_debian_13.sh | bash
 ```
 
 ---
